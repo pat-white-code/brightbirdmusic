@@ -25,24 +25,44 @@ let teachers = [
 ];
 
 function Lesson(startTime, endTime) {
-  this.startTime = startTime;
-  this.endTime = endTime;
+  this.startTime = new Date(startTime);
+  this.endTime = new Date(endTime);
 };
 
-Lesson.prototype.isAvailableBefore(lessonDuration, driveDuration) {
-  for (i = 0 ; i < lessons.length ; i++) {
-    if(!(this === lessons[i])) {
-      if(this.startTime - lessonDuration - driveDuration > lessons[i].endTime) {return true}
-    }
-  }
+const lesson1 = new Lesson('Mon oct 28 15:30:00 GMT-500', 'Mon oct 28 16:00:00 GMT-500');
+const lesson2 = new Lesson('Mon oct 28 16:15:00 GMT-500', 'Mon oct 28 16:45:00 GMT-500');
+const lesson3 = new Lesson('Mon oct 28 18:30:00 GMT-500', 'Mon oct 28 19:00:00 GMT-500');
 
-};
 
-function Ball(x, y, velX, velY, color, size) {
-  this.x = x;
-  this.y = y;
-  this.velX = velX;
-  this.velY = velY;
-  this.color = color;
-  this.size = size;
+teachers['0']['schedule'].push(lesson1);
+teachers['0']['schedule'].push(lesson2);
+teachers['0']['schedule'].push(lesson3);
+
+
+function potentialAvailability (lessonDuration, travelDuration) {
+  let potentialLessons = []
+  let currentLessons = teachers['0']['schedule']
+  currentLessons.forEach(lesson => {
+    const lessonBefore = makeLessonBefore(lessonDuration, travelDuration);
+    potentialLessons.push(lessonBefore);
+    const lessonAfter = makeLessonAfter(lessonDuration, travelDuration);
+    potentialLessons.push(lessonAfter);
+  })
+  return potentialLessons;
 }
+
+function makeLessonBefore(lessonDuration, travelDuration){
+  newStartTime = new Date (this.startTime - lessonDuration - travelDuration);
+  newEndTime = new Date (this.startTime + lessonDuration);
+  const newLesson = new Lesson(newStartTime, newEndTime);
+  return newLesson
+}
+
+function makeLessonAfter(lessonDuration, travelDuration) {
+  newStartTime = new Date(this.endTime + travelDuration);
+  newEndTime = new Date(this.endTime + travelDuration + lessonDuration);
+  const newLesson = new Lesson(newStartTime, newEndTime);
+  return newLesson
+}
+
+potentialAvailability(30*60*1000, 15*16*1000);
