@@ -13,56 +13,101 @@ let teachers = [
       styles: ['classical', 'jazz', 'gypsey jazz', 'pop', 'rock'],
       skills: ['songwriting', 'improvisation']
     }],
-    schedule: [
+    calendar: [ //"schedule"
     {
-      type: 'lesson',
-      startTime: new Date('Fri oct 25 15:30:00 GMT-500'),
-      endTime: new Date('Fri oct 25 16:00:00 GMT'),
-      duration: 30*60*1000,
-      address: '1200 Westlake Dr, Austin, TX 78746'
-    }]
+      start: moment('10/28/19 3:00 PM', 'MM/DD/YY hh:mm a'),
+      end: moment('10/28/19 8:00 PM', 'MM/DD/YY hh:mm a'),
+      scheduledLessons: [],
+      availability: []
+    }
+  ]
 }
 ];
 
-function Lesson(startTime, endTime) {
-  this.startTime = new Date(startTime);
-  this.endTime = new Date(endTime);
+
+function Lesson(startTime, lessonMinutes){
+  this.startTime = moment(startTime, 'MM/DD/YY hh:mm a');
+  this.startTime._i = this.startTime.format("MM/DD/YY hh:mm a");
+  this.endTime = this.startTime.clone().add(lessonMinutes, 'minutes');
+  this.endTime._i = this.endTime.format("MM/DD/YY hh:mm a");
+  // this.endTime = moment (endTime, 'MM/DD/YY hh:mm a');
 };
 
-const lesson1 = new Lesson('Mon oct 28 15:30:00 GMT-500', 'Mon oct 28 16:00:00 GMT-500');
-const lesson2 = new Lesson('Mon oct 28 16:15:00 GMT-500', 'Mon oct 28 16:45:00 GMT-500');
-const lesson3 = new Lesson('Mon oct 28 18:30:00 GMT-500', 'Mon oct 28 19:00:00 GMT-500');
+const lesson1 = new Lesson('10/28/19 3:30 PM', 30);
+const lesson2 = new Lesson('10/28/19 4:15 PM', 30);
+const lesson3 = new Lesson('10/28/19 5:00 PM', 30);
 
 
-teachers['0']['schedule'].push(lesson1);
-teachers['0']['schedule'].push(lesson2);
-teachers['0']['schedule'].push(lesson3);
+teachers['0']['calendar'][0]['scheduledLessons'].push(lesson1);
+teachers['0']['calendar'][0]['scheduledLessons'].push(lesson2);
+teachers['0']['calendar'][0]['scheduledLessons'].push(lesson3);
+
+
 
 
 function potentialAvailability (lessonDuration, travelDuration) {
-  let potentialLessons = []
-  let currentLessons = teachers['0']['schedule']
+  let currentLessons = teachers['0']['calendar'][0]['scheduledLessons'];
   currentLessons.forEach(lesson => {
-    const lessonBefore = makeLessonBefore(lessonDuration, travelDuration);
-    potentialLessons.push(lessonBefore);
-    const lessonAfter = makeLessonAfter(lessonDuration, travelDuration);
-    potentialLessons.push(lessonAfter);
-  })
-  return potentialLessons;
+    const lessonBefore = makeLessonBefore(lesson.startTime, lessonDuration, travelDuration);
+    teachers['0']['calendar'][0]['availability'].push(lessonBefore);
+    const lessonAfter = makeLessonAfter(lesson.endTime, lessonDuration, travelDuration);
+    teachers['0']['calendar'][0]['availability'].push(lessonAfter);
+  });
 }
 
-function makeLessonBefore(lessonDuration, travelDuration){
-  newStartTime = new Date (this.startTime - lessonDuration - travelDuration);
-  newEndTime = new Date (this.startTime + lessonDuration);
-  const newLesson = new Lesson(newStartTime, newEndTime);
-  return newLesson
+function qualifyAvailability(){
+  //stores location of lists:
+  let potentialLessons = teachers['0']['calendar'][0]['availability'];
+  let scheduledLessons = teachers['0']['calendar'][0]['scheduledLessons'];
+  //For every potential lesson:
+    for (i = 0 ; i < potentialLessons.length ; i++) {
+      //Creates variables to store new lesson[i] info:
+      let startTime = potentialLessons[i].startTime.valueOf();
+      let endTime = potentialLessons[i].endTime.valueOf();
+      //look at every lesson on teacher's schedule
+      for (j = 0 ; j < scheduledLessons.length ; j++) {
+
+        //create variables to store current lesson[j] info:
+        let currentStartTime = scheduledLessons[j].startTime.valueOf();
+        let currentEndTime = scheduledLessons[j].endTime.valueOf();
+
+        //Check for conflicts
+        //check if lesson starts at the same time as this lesson or starts right when another lesson ends
+        if (startTime === currentStartTime || startTime === currentEndTime){
+          //remove item
+          potentialLessons.splice(i, 1);
+        } else 
+
+        //check if new lesson starts before current lesson, but runs into current lesson
+        if (startTime < currentStartTime && endTime >= currentStartTime) {
+          //remove item
+          potentialLessons.splice(i, 1);
+        } else
+
+        //check if new lesson starts after current lesson starts but before current lesson ends:
+        if (startTime > currentStartTime && startTime <= currentEndTime){
+          //remove item
+          potentialLessons.splice(i, 1);
+        } else {
+          console.log(`${potentialLessons[i]} does not conflict with ${scheduledLessons[j]}`) //for testing
+        } 
+      }
+    }
+  
 }
 
-function makeLessonAfter(lessonDuration, travelDuration) {
-  newStartTime = new Date(this.endTime + travelDuration);
-  newEndTime = new Date(this.endTime + travelDuration + lessonDuration);
-  const newLesson = new Lesson(newStartTime, newEndTime);
-  return newLesson
+function makeLessonBefore(momentStart, lessonDuration, travelDuration){
+  newStartTime = momentStart.clone().subtract(lessonDuration, 'minutes').subtract(travelDuration, 'minutes');
+  const newLesson = new Lesson(newStartTime, lessonDuration);
+  return newLesson;
 }
 
-potentialAvailability(30*60*1000, 15*16*1000);
+function makeLessonAfter(momentEnd, lessonDuration, travelDuration) {
+  newStartTime = momentEnd.clone().add(travelDuration, 'minutes');
+  const newLesson = new Lesson(newStartTime, lessonDuration);
+  return newLesson;
+}
+
+potentialAvailability(30, 15);
+
+// console.log(moment().format());
