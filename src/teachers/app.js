@@ -55,6 +55,34 @@ function potentialAvailability (lessonDuration, travelDuration) {
   });
 }
 
+const sameLessonTime = (startTime1, startTime2) => {
+  !(startTime1 === startTime2);
+}
+
+const endsTooLate = (startTime1, startTime2, endTime1) => {
+  !(startTime1 < startTime2 && endTime1 > startTime2);
+}
+
+const startsTooSoon = (startTime1, startTime2, endTime2) => {
+  !(startTime1 > startTime2 && startTime1 < endTime2);
+}
+
+
+function filteredLessons(lessonArray, currentLesson){
+  let start1 = currentLesson.startTime.valueOf;
+  let start2 = lesson2.startTime.valueOf;
+  let end1 = currentLesson.endTime.valueOf;
+  let end2 = lesson2.endTime.valueOf;
+  const filter1 = lessonArray.filter(sameLessonTime());
+}
+
+const filterLessons = (arr, startTime, endTime) => {
+  startTime = this.startTime.valueOf;
+  endTime = this.endTime.valueOf;
+  return arr.filter(lesson => sameLessonTime(lesson.startTime, lesson.endTime, startTime, endTime));
+};
+
+
 function qualifyAvailability(){
   //stores location of lists:
   let potentialLessons = teachers['0']['calendar'][0]['availability'];
