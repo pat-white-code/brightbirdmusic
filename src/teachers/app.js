@@ -43,16 +43,67 @@ teachers['0']['calendar'][0]['scheduledLessons'].push(lesson2);
 teachers['0']['calendar'][0]['scheduledLessons'].push(lesson3);
 
 
+const potentialAvailabilityDraft = (newDuration, newAddress) => {
+  let currentLessons = teachers['0']['calendar'][0]['scheduledLessons'];
+  currentLessons.forEach(lesson => {
+    const lessonBefore = makeLessonBeforeDraft(lesson.startTime, lesson.address, newDuration, newAddress);
+    const lessonAfter = makeLessonAfterDraft()
+  });
 
+
+function makeLessonBeforeDraft(currentStart, currentAddress, newDuration, newAddress){
+
+  //Fetch Drive data from GoogleAPI
+  //Destination = currentAddress
+  //Departure = newAddress
+  //ArrivesBy = currentStart
+
+  //driveDuration = returned from Google plus 3(
+  //newStartTime = currentStart.clone().subtract(travelDuration, 'minutes').subtract(lessonDuration. 'minutes').subtact(1, 'minute') until result is divisible by 5(3:05, 4:10 example);
+  //const newLesson = newLesson(newStartTime, newDuration, newAddress);
+  //return new lesson;
+}
+
+function makeLessonAfterDraft(currentEnd, currentAddress, newDuration, newAddress){
+
+  //Fetch Drive data from GoogleAPI
+  //Destination = newAddress;
+  //Departure = currentAddress
+  //Departs at = currentEnd
+
+  //driveDuration = returned from Google plus 3 minutes
+  //newStartTime = currentEnd.clone().add(driveDuration, 'minutes').add(1, 'minute') until result is divisible by 5(3:05, 4:10 example);
+  //const newLesson = newLesson(newStartTime, newDuration, newAddress);
+  //return new lesson;
+}
 
 function potentialAvailability (lessonDuration, travelDuration) {
   let currentLessons = teachers['0']['calendar'][0]['scheduledLessons'];
   currentLessons.forEach(lesson => {
+  
     const lessonBefore = makeLessonBefore(lesson.startTime, lessonDuration, travelDuration);
     teachers['0']['calendar'][0]['availability'].push(lessonBefore);
+
     const lessonAfter = makeLessonAfter(lesson.endTime, lessonDuration, travelDuration);
     teachers['0']['calendar'][0]['availability'].push(lessonAfter);
   });
+}
+
+function makeLessonBefore(momentStart, lessonDuration, travelDuration){
+  
+  //Student address should equal departure location
+  //
+  //Fetch drive data from google.
+  //arrive by = 
+  newStartTime = momentStart.clone().subtract(lessonDuration, 'minutes').subtract(travelDuration, 'minutes');
+  const newLesson = new Lesson(newStartTime, lessonDuration);
+  return newLesson;
+}
+
+function makeLessonAfter(momentEnd, lessonDuration, travelDuration) {
+  newStartTime = momentEnd.clone().add(travelDuration, 'minutes');
+  const newLesson = new Lesson(newStartTime, lessonDuration);
+  return newLesson;
 }
 
 const sameLessonTime = (startTime1, startTime2) => {
@@ -67,7 +118,7 @@ const startsTooSoon = (startTime1, startTime2, endTime2) => {
   !(startTime1 > startTime2 && startTime1 < endTime2);
 }
 
-function filterConflicts(){
+function filterConflicts(){ //WORKS!
   let potentialLessons = teachers['0']['calendar'][0]['availability'];
   let scheduledLessons = teachers['0']['calendar'][0]['scheduledLessons'];
 
@@ -84,60 +135,6 @@ function filterConflicts(){
 
   });
   teachers['0']['calendar'][0]['availability'] = potentialLessons;
-}
-
-
-function qualifyAvailability(){
-  //stores location of lists:
-  let potentialLessons = teachers['0']['calendar'][0]['availability'];
-  let scheduledLessons = teachers['0']['calendar'][0]['scheduledLessons'];
-  //For every potential lesson:
-    for (i = 0 ; i < potentialLessons.length ; i++) {
-      //Creates variables to store new lesson[i] info:
-      let startTime = potentialLessons[i].startTime.valueOf();
-      let endTime = potentialLessons[i].endTime.valueOf();
-      //look at every lesson on teacher's schedule
-      for (j = 0 ; j < scheduledLessons.length ; j++) {
-
-        //create variables to store current lesson[j] info:
-        let currentStartTime = scheduledLessons[j].startTime.valueOf();
-        let currentEndTime = scheduledLessons[j].endTime.valueOf();
-
-        //Check for conflicts
-        //check if lesson starts at the same time as this lesson or starts right when another lesson ends
-        if (startTime === currentStartTime || startTime === currentEndTime){
-          //remove item
-          potentialLessons.splice(i, 1);
-        } else 
-
-        //check if new lesson starts before current lesson, but runs into current lesson
-        if (startTime < currentStartTime && endTime >= currentStartTime) {
-          //remove item
-          potentialLessons.splice(i, 1);
-        } else
-
-        //check if new lesson starts after current lesson starts but before current lesson ends:
-        if (startTime > currentStartTime && startTime <= currentEndTime){
-          //remove item
-          potentialLessons.splice(i, 1);
-        } else {
-          console.log(`${potentialLessons[i]} does not conflict with ${scheduledLessons[j]}`) //for testing
-        } 
-      }
-    }
-  
-}
-
-function makeLessonBefore(momentStart, lessonDuration, travelDuration){
-  newStartTime = momentStart.clone().subtract(lessonDuration, 'minutes').subtract(travelDuration, 'minutes');
-  const newLesson = new Lesson(newStartTime, lessonDuration);
-  return newLesson;
-}
-
-function makeLessonAfter(momentEnd, lessonDuration, travelDuration) {
-  newStartTime = momentEnd.clone().add(travelDuration, 'minutes');
-  const newLesson = new Lesson(newStartTime, lessonDuration);
-  return newLesson;
 }
 
 potentialAvailability(30, 15);
