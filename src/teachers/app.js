@@ -34,8 +34,8 @@ function Lesson(startTime, lessonMinutes){
 };
 
 const lesson1 = new Lesson('10/28/19 3:30 PM', 30);
-const lesson2 = new Lesson('10/28/19 4:15 PM', 30);
-const lesson3 = new Lesson('10/28/19 5:00 PM', 30);
+const lesson2 = new Lesson('10/28/19 4:30 PM', 30);
+const lesson3 = new Lesson('10/28/19 6:00 PM', 30);
 
 
 teachers['0']['calendar'][0]['scheduledLessons'].push(lesson1);
@@ -60,27 +60,31 @@ const sameLessonTime = (startTime1, startTime2) => {
 }
 
 const endsTooLate = (startTime1, startTime2, endTime1) => {
-  !(startTime1 < startTime2 && endTime1 > startTime2);
+  (startTime1 < startTime2 && endTime1 > startTime2);
 }
 
 const startsTooSoon = (startTime1, startTime2, endTime2) => {
   !(startTime1 > startTime2 && startTime1 < endTime2);
 }
 
+function filterConflicts(){
+  let potentialLessons = teachers['0']['calendar'][0]['availability'];
+  let scheduledLessons = teachers['0']['calendar'][0]['scheduledLessons'];
 
-function filteredLessons(lessonArray, currentLesson){
-  let start1 = currentLesson.startTime.valueOf;
-  let start2 = lesson2.startTime.valueOf;
-  let end1 = currentLesson.endTime.valueOf;
-  let end2 = lesson2.endTime.valueOf;
-  const filter1 = lessonArray.filter(sameLessonTime());
+
+  scheduledLessons.forEach(lesson => {
+    //return only new lessons that do not have the same start time as this current lesson
+    potentialLessons = potentialLessons.filter(newLesson => !(newLesson.startTime.valueOf() === lesson.startTime.valueOf()));
+
+    //return only new lessons that do not run into this current lessons
+    potentialLessons = potentialLessons.filter(newLesson => !(newLesson.startTime.valueOf() < lesson.startTime.valueOf() && newLesson.endTime.valueOf() > lesson.startTime.valueOf()));
+
+    //return only new lessons that do not while this lesson is happening
+    potentialLessons = potentialLessons.filter(newLesson => !(newLesson.startTime.valueOf() > lesson.startTime.valueOf() && newLesson.startTime.valueOf() < lesson.endTime.valueOf()))
+
+  });
+  teachers['0']['calendar'][0]['availability'] = potentialLessons;
 }
-
-const filterLessons = (arr, startTime, endTime) => {
-  startTime = this.startTime.valueOf;
-  endTime = this.endTime.valueOf;
-  return arr.filter(lesson => sameLessonTime(lesson.startTime, lesson.endTime, startTime, endTime));
-};
 
 
 function qualifyAvailability(){
@@ -139,3 +143,24 @@ function makeLessonAfter(momentEnd, lessonDuration, travelDuration) {
 potentialAvailability(30, 15);
 
 // console.log(moment().format());
+
+
+//function takes in current lessons array and new lessons array.
+
+//filter the current lessons array for each current lesson.
+
+//save the current lessons array as the filtered array.
+
+//const filtered array = lesson.filter.c
+
+filterConflicts();
+
+//THIS WORKS ON LINE 79
+// scheduledLessons.forEach(lesson => {
+//   potentialLessons = potentialLessons.filter(newLesson => !(newLesson.startTime.valueOf() === lesson.startTime.valueOf()));
+
+//   potentialLessons = potentialLessons.filter(newLesson => !(newLesson.startTime.valueOf() < lesson.startTime.valueOf() && newLesson.endTime.valueOf() > lesson.startTime.valueOf()));
+
+//   potentialLessons = potentialLessons.filter(newLesson => !(newLesson.startTime.valueOf() > lesson.startTime.valueOf() && newLesson.startTime.valueOf() < lesson.endTime.valueOf()))
+
+// })
