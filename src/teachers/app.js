@@ -1,3 +1,10 @@
+const googleApiKey = 'AIzaSyAzq7W-eXQNz0ptPkQqWi9LBluABETr7Zs';
+//const requestUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${origins}&destinations=${destinations}&key=${googleApiKey}`;
+
+const travelDisplay = document.getElementById('travel-time');
+
+const apiKey = 'AIzaSyAzq7W-eXQNz0ptPkQqWi9LBluABETr7Zs';
+
 console.log('app.js Here!')
 
 let teachers = [
@@ -25,17 +32,59 @@ let teachers = [
 ];
 
 
-function Lesson(startTime, lessonMinutes){
+
+
+function Lesson(startTime, lessonMinutes, address){
   this.startTime = moment(startTime, 'MM/DD/YY hh:mm a');
   this.startTime._i = this.startTime.format("MM/DD/YY hh:mm a");
   this.endTime = this.startTime.clone().add(lessonMinutes, 'minutes');
   this.endTime._i = this.endTime.format("MM/DD/YY hh:mm a");
+  this.address = address;
   // this.endTime = moment (endTime, 'MM/DD/YY hh:mm a');
 };
 
-const lesson1 = new Lesson('10/28/19 3:30 PM', 30);
-const lesson2 = new Lesson('10/28/19 4:30 PM', 30);
-const lesson3 = new Lesson('10/28/19 6:00 PM', 30);
+const lesson1 = new Lesson('10/28/19 3:30 PM', 30, '11112 claro vista cove, Austin, TX 79839 USA');
+const lesson2 = new Lesson('10/28/19 4:30 PM', 30, '901 Terrace Mountain Road, Austin, TX 78746 USA');
+const lesson3 = new Lesson('10/28/19 6:00 PM', 30, '2004 Misty Wood Dr, Austin, TX 78746 USA');
+
+const newStudent = {
+  address: '11204 S BAY LN, Austin, Texas 78739 United States'
+};
+
+var origin1 = lesson1.adddress;
+var origin2 = lesson2.address;
+var destinationA = newStudent.address;
+
+DistanceMatrixService.getDistanceMatrix()
+
+var service = new google.maps.DistanceMatrixService();
+service.getDistanceMatrix(
+  {
+    origins: [origin1, origin2],
+    destinations: [destinationA],
+    travelMode: 'DRIVING',
+    unitSystem: 'IMPERIAL',
+    avoidHighways: Boolean,
+    avoidTolls: Boolean,
+  }, callback);
+
+  function callback(response, status) {
+    if (status == 'OK') {
+      var origins = response.originAddresses;
+      var destinations = response.destinationAddresses;
+  
+      for (var i = 0; i < origins.length; i++) {
+        var results = response.rows[i].elements;
+        for (var j = 0; j < results.length; j++) {
+          var element = results[j];
+          var distance = element.distance.text;
+          var duration = element.duration.text;
+          var from = origins[i];
+          var to = destinations[j];
+        }
+      }
+    }
+  }
 
 
 teachers['0']['calendar'][0]['scheduledLessons'].push(lesson1);
