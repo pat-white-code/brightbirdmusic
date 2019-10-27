@@ -49,6 +49,7 @@ const potentialAvailabilityDraft = (newDuration, newAddress) => {
     const lessonBefore = makeLessonBeforeDraft(lesson.startTime, lesson.address, newDuration, newAddress);
     const lessonAfter = makeLessonAfterDraft()
   });
+};
 
 
 function makeLessonBeforeDraft(currentStart, currentAddress, newDuration, newAddress){
@@ -91,10 +92,6 @@ function potentialAvailability (lessonDuration, travelDuration) {
 
 function makeLessonBefore(momentStart, lessonDuration, travelDuration){
   
-  //Student address should equal departure location
-  //
-  //Fetch drive data from google.
-  //arrive by = 
   newStartTime = momentStart.clone().subtract(lessonDuration, 'minutes').subtract(travelDuration, 'minutes');
   const newLesson = new Lesson(newStartTime, lessonDuration);
   return newLesson;
@@ -106,17 +103,17 @@ function makeLessonAfter(momentEnd, lessonDuration, travelDuration) {
   return newLesson;
 }
 
-const sameLessonTime = (startTime1, startTime2) => {
-  !(startTime1 === startTime2);
-}
+// const sameLessonTime = (startTime1, startTime2) => {
+//   !(startTime1 === startTime2);
+// }
 
-const endsTooLate = (startTime1, startTime2, endTime1) => {
-  (startTime1 < startTime2 && endTime1 > startTime2);
-}
+// const endsTooLate = (startTime1, startTime2, endTime1) => {
+//   (startTime1 < startTime2 && endTime1 > startTime2);
+// }
 
-const startsTooSoon = (startTime1, startTime2, endTime2) => {
-  !(startTime1 > startTime2 && startTime1 < endTime2);
-}
+// const startsTooSoon = (startTime1, startTime2, endTime2) => {
+//   !(startTime1 > startTime2 && startTime1 < endTime2);
+// }
 
 function filterConflicts(){ //WORKS!
   let potentialLessons = teachers['0']['calendar'][0]['availability'];
@@ -130,12 +127,13 @@ function filterConflicts(){ //WORKS!
     //return only new lessons that do not run into this current lessons
     potentialLessons = potentialLessons.filter(newLesson => !(newLesson.startTime.valueOf() < lesson.startTime.valueOf() && newLesson.endTime.valueOf() > lesson.startTime.valueOf()));
 
-    //return only new lessons that do not while this lesson is happening
+    //return only new lessons that do not start while this lesson is happening
     potentialLessons = potentialLessons.filter(newLesson => !(newLesson.startTime.valueOf() > lesson.startTime.valueOf() && newLesson.startTime.valueOf() < lesson.endTime.valueOf()))
 
   });
   teachers['0']['calendar'][0]['availability'] = potentialLessons;
 }
+
 
 potentialAvailability(30, 15);
 
@@ -151,13 +149,3 @@ potentialAvailability(30, 15);
 //const filtered array = lesson.filter.c
 
 filterConflicts();
-
-//THIS WORKS ON LINE 79
-// scheduledLessons.forEach(lesson => {
-//   potentialLessons = potentialLessons.filter(newLesson => !(newLesson.startTime.valueOf() === lesson.startTime.valueOf()));
-
-//   potentialLessons = potentialLessons.filter(newLesson => !(newLesson.startTime.valueOf() < lesson.startTime.valueOf() && newLesson.endTime.valueOf() > lesson.startTime.valueOf()));
-
-//   potentialLessons = potentialLessons.filter(newLesson => !(newLesson.startTime.valueOf() > lesson.startTime.valueOf() && newLesson.startTime.valueOf() < lesson.endTime.valueOf()))
-
-// })
