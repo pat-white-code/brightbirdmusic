@@ -8,10 +8,23 @@ const destinations = "Lacrosse+Avenue+Austin+TX+78739";
 
 const requestUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${origins}&destinations=${destinations}&key=${googleApiKey}`;
 
-async function fetchMap() {
-  const response = await fetch(requestUrl);
-  const myJson = await response.json();
-  console.log(JSON.stringify(myJson));
+//string in browser https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=7412+Poinsetta+Ln+Austin+TX+78746&destinations=Lacrosse+Avenue+Austin+TX+78739&key=AIzaSyAzq7W-eXQNz0ptPkQqWi9LBluABETr7Zs
+
+// const request = new XMLHttpRequest();
+// request.open('GET', requestURL);
+// request.responseType = 'json';
+// request.send();
+
+// request.onload = function() {
+//   const mapInfo = request.response;
+//   console.log(mapInfo)
+// }
+
+
+function fetchMap() {
+  fetch(requestUrl)
+  .then(response => console.log(response))
+  .catch(error => console.log(error));
 }
 
 fetchMap();
