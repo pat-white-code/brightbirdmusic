@@ -22,6 +22,27 @@ let teachers = [
       availability: []
     }
   ]
+},
+  {
+    name: {
+    first: 'Pat',
+    last: 'White'
+  },
+    instruments: [{
+      name: 'piano',
+      minAge: 4,
+      maxExp: 1,
+      styles: ['basic'],
+      skills: ['note reading']
+    }],
+    calendar: [ //"schedule"
+    {
+      start: moment('10/28/19 3:00 PM', 'MM/DD/YY hh:mm a'),
+      end: moment('10/28/19 8:00 PM', 'MM/DD/YY hh:mm a'),
+      scheduledLessons: [],
+      availability: []
+    }
+  ]
 }
 ];
 
@@ -161,3 +182,22 @@ potentialAvailability(30, 15);
 //const filtered array = lesson.filter.c
 
 filterConflicts();
+
+//only show guitar teachers
+
+let studentInstrument = 'guitar';
+
+//const filteredTeachers = teachers.filter(teacher => teacher.instruments[0].name.includes(studentInstrument));
+
+const filteredTeachers = teachers.filter(filterByInstrument);
+
+function filterByInstrument(teacher) {
+  const instruments = teacher.instruments;
+  instruments.forEach(instrument => {
+    if(instrument.name === studentInstrument) {
+      return true;
+    }
+  })
+};
+
+console.log(filteredTeachers);
