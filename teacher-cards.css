@@ -1,6 +1,4 @@
-h1 {
-  margin-bl
-}
+
 body {
   width: 100%;
   height: 100vh;
@@ -22,50 +20,115 @@ body {
 } */
 
 .teacher-card {
-  border: 1px red solid;
-  height: 450px;
+  /* border: 1px red solid; */
+  height: 475px;
   width:250px;
   background: #FDFEFF;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
 }
 
 .teacher-card__img-container {
   height: 200px;
-  border: 1px red solid;
+  /* border: 1px red solid; */
+  background-image: url('./jim-foster-headshot.jpg');
+  background-size: cover;
 }
 
 .teacher-card__info-container {
   height: 250px;
-  border: 1px red solid;
+  /* border: 1px red solid; */
 }
 
 .info-container__name {
   display: flex;
   justify-content: center;
-  border: 1px blue solid;
+  /* border: 1px blue solid; */
 }
 
 .info-container__name-h1 {
   color: #2D354A;
   font-size: 24px;
-  font-weight: 600;
+  font-weight: 400;
   text-align: center;
 }
 
 .info-container__instruments {
-  height: 30px;
   display: flex;
   justify-content: center;
+  padding: 10px;
 }
-
+/* 
 .theme {
   color: #4FB363
   color: #A3FFB6;
   color: #8AFFA1;
   color: #B33D4E;
   color: #FF8A9B;
-}
+} */
 
 .instrument-icon {
   height: 30px;
   width: 30px;
+  margin: 0 10px;
+}
+
+.info-container__bio {
+  height: 80px;
+  overflow: hidden;
+  /* border: 1px red solid; */
+  text-align: center;
+  line-height: 1.15;
+  color: #080911;
+  font-size: 14px;
+  font-weight: 300;
+}
+
+.info-container__availability {
+  height: 100px;
+  /* border: 1px red solid; */
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-evenly;
+  align-items: center;
+  overflow: scroll;
+}
+
+.info-container__availability-item {
+  border: 1px blue solid;
+  box-shadow: grey 2px 2px 6px;
+  padding: 5px 10px;
+  display: flex;
+  flex-direction: column;
+  max-height: 62px;
+}
+
+.square {
+  height: 50px;
+  min-width: 50px;
+  box-shadow: 
+    0 13px 26px rgba(0, 0, 0, 0.2),
+    0 3px 6px rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.top-square {
+  height:50%;
+  text-align: center;
+}
+.bottom-square {
+  height:50%;
+  text-align: center;
+}
+
+.monday {
+  background-color: #4FB363;
+}
+
+.tuesday {
+  background-color: #B33D4E;
+}
+
+.friday {
+  background-color: #FF8A9B;
 }
