@@ -1,0 +1,71 @@
+h1 {
+  margin-bl
+}
+body {
+  width: 100%;
+  height: 100vh;
+	display: flex;
+	position: relative;
+	background: #eeeeec;
+  align-items: center;
+	flex-direction: column;
+  justify-content: center;
+  
+	font-family: 'Open Sans', sans-serif;
+	font-size: 100%;
+}
+
+/* .main-wrapper {
+  border: 1px red solid;
+  height: 100%;
+  width: 100%;
+} */
+
+.teacher-card {
+  border: 1px red solid;
+  height: 450px;
+  width:250px;
+  background: #FDFEFF;
+}
+
+.teacher-card__img-container {
+  height: 200px;
+  border: 1px red solid;
+}
+
+.teacher-card__info-container {
+  height: 250px;
+  border: 1px red solid;
+}
+
+.info-container__name {
+  display: flex;
+  justify-content: center;
+  border: 1px blue solid;
+}
+
+.info-container__name-h1 {
+  color: #2D354A;
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.info-container__instruments {
+  height: 30px;
+  display: flex;
+  justify-content: center;
+}
+
+.theme {
+  color: #4FB363
+  color: #A3FFB6;
+  color: #8AFFA1;
+  color: #B33D4E;
+  color: #FF8A9B;
+}
+
+.instrument-icon {
+  height: 30px;
+  width: 30px;
+}
