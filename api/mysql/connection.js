@@ -9,7 +9,7 @@ class Connection {
       host: '35.222.166.74',
       user: 'root',
       password: 'JoeBiden354',
-      //password: process.env.connection_password,
+      // password: process.env.connection_password,
       database: 'admin'
       })
     return this.pool;
