@@ -8,11 +8,16 @@ class Connection {
       connectionLimit: 100,
       host: '35.222.166.74',
       user: 'root',
-      password: sql_pass,
-      database: 'admin',
+      password: 'JoeBiden354',
+      //password: process.env.connection_password,
+      database: 'admin'
       })
     return this.pool;
     }
   return this.pool
   } 
 }
+
+const instance = new Connection()
+
+module.exports = instance;
