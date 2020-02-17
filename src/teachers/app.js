@@ -185,19 +185,19 @@ filterConflicts();
 
 //only show guitar teachers
 
-let studentInstrument = 'guitar';
+// let studentInstrument = 'guitar';
 
 //const filteredTeachers = teachers.filter(teacher => teacher.instruments[0].name.includes(studentInstrument));
 
-const filteredTeachers = teachers.filter(filterByInstrument);
+// const filteredTeachers = teachers.filter(filterByInstrument);
 
-function filterByInstrument(teacher) {
-  const instruments = teacher.instruments;
-  instruments.forEach(instrument => {
-    if(instrument.name === studentInstrument) {
-      return true;
-    }
-  })
-};
+// function filterByInstrument(teacher) {
+//   const instruments = teacher.instruments;
+//   instruments.forEach(instrument => {
+//     if(instrument.name === studentInstrument) {
+//       return true;
+//     }
+//   })
+// };
 
-console.log(filteredTeachers);
+// console.log(filteredTeachers);
