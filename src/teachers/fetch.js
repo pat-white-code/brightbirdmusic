@@ -30,11 +30,3 @@ const fetchResponse = () => {
 }
 
 getTeachers();
-
-// const fetchPokeOne = (name) => {
-//   fetch(`https://pokeapi.co/api/v2/pokemon/${name}`)
-//   .then(res => res.json())
-//   .then(json => {playerOne = json})
-// }
-
-// localhost:4001/api/teachers?instId=${student.instId}&zipCode=${student.zipCode}&student_age=${student.age}
