@@ -4,11 +4,14 @@ const student = {
   age: 6
 }
 
+let globalTeachers;
+
 async function getTeachers() {
   let response = await (fetch(`http://127.0.0.1:4001/api/teachers/?instId=${student.instId}&zipCode=${student.zipCode}&studentAge=${student.age}`));
   let teachers = await response.json();
   console.log('TEACHERS', teachers);
   teachers.forEach(getSchedule);
+  globalTeachers = teachers;
 };
 
 async function getSchedule(teacher) {
@@ -21,7 +24,11 @@ async function getSchedule(teacher) {
 async function getLessons(schedule) {
   let request = await fetch(`http://127.0.0.1:4001/api/schedules/lessons/${schedule.id}`);
   let lessons = await request.json();
+  lessons.forEach(lesson => lesson.start_time = 'INSERT MOMENT HERE!');
   schedule.lessons = lessons;
+
+  //convert each lesson start_time and end_time to moment.js
+  //startime = "15:30:00"
 }
 
 const fetchResponse = () => {
@@ -30,3 +37,11 @@ const fetchResponse = () => {
 }
 
 getTeachers();
+
+//add availability on each teacher.
+//for each teacher
+  //for each schedule,
+    //for each lesson
+
+    //create a new lessons starts at current lesson - drive time - lesson duration
+    // create a new lesson: starts at currentLesson.endTime + drive time
