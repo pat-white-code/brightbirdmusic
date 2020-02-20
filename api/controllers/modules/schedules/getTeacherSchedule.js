@@ -3,7 +3,7 @@ const pool = require('../../../mysql/connection');
 
 const getTeacherSchedule = (req, res) => {
   let sql = `
-    SELECT date_, start_from, end_by
+    SELECT schedules.id, date_, start_from, end_by
     FROM schedules
     JOIN teachers
       ON schedules.teacher_id = teachers.id

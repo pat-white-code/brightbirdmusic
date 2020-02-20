@@ -4,10 +4,24 @@ const student = {
   age: 6
 }
 
-const getTeachers = () => {
-  fetch(`../../api/teachers/?instId=1&zipCode=78746&studentAge=6`)
-    .then(res => console.log(res));
-    // .then(json => console.log(json));
+async function getTeachers() {
+  let response = await (fetch(`http://127.0.0.1:4001/api/teachers/?instId=${student.instId}&zipCode=${student.zipCode}&studentAge=${student.age}`));
+  let teachers = await response.json();
+  console.log('TEACHERS', teachers);
+  teachers.forEach(getSchedule);
+};
+
+async function getSchedule(teacher) {
+  let request = await fetch(`http://127.0.0.1:4001/api/schedules/${teacher.teacher_id}`);
+  let schedule = await request.json();
+  teacher.schedule = schedule;
+  teacher.schedule.forEach(getLessons);
+}
+
+async function getLessons(schedule) {
+  let request = await fetch(`http://127.0.0.1:4001/api/schedules/lessons/${schedule.id}`);
+  let lessons = await request.json();
+  schedule.lessons = lessons;
 }
 
 const fetchResponse = () => {

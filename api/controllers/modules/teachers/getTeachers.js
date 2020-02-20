@@ -3,7 +3,7 @@ const mysql = require('mysql');
 
 const getTeachers = (req, res) => {
   let sql = `
-  SELECT first_name, last_name, instrument_name, zip_code
+  SELECT teachers.id AS teacher_id, first_name, last_name, instrument_name, zip_code
   FROM teachers
   JOIN teacher_instruments
     ON teachers.id = teacher_instruments.teacher_id
