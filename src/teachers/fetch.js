@@ -1,11 +1,13 @@
 const clientId = 1;
 //fetch students by studentId
-let globalTeachers;
+let globalTeachers = [];
+let globalClient = {};
 
 async function getRequests(){
   let response = await fetch(`http://127.0.0.1:4001/api/subscriptions/requests/client/${clientId}`);
   let requests = await response.json();
   console.log('REQUESTS', requests);
+  globalClient.zipCode = requests[0].zip_code;
   if(requests.length === 2) {getTeachersForTwo(requests)}
   requests.forEach(getTeachers);
 }
@@ -20,9 +22,9 @@ async function getTeachersForTwo(requests) {
 async function getTeachers(request) {
   let response = await (fetch(`http://127.0.0.1:4001/api/teachers/?instId=${request.instrument_id}&zipCode=${request.zip_code}&studentAge=${request.student_age}`));
   let teachers = await response.json();
-  console.log('TEACHERS', teachers);
+  console.log(`TEACHERS FOR ${request.first_name} on ${request.instrument_name}`, teachers);
   teachers.forEach(getSchedule);
-  // globalTeachers = teachers;
+  globalTeachers.push(teachers);
 };
 
 async function getSchedule(teacher) {
@@ -33,23 +35,29 @@ async function getSchedule(teacher) {
 }
 
 async function getLessons(schedule) {
+  schedule.availabilities = [];
   let request = await fetch(`http://127.0.0.1:4001/api/schedules/lessons/${schedule.id}`);
   let lessons = await request.json();
   lessons.forEach(lesson => {
+    // DUMMY CODE --- FETCH drivetime from google using globalClient.address
+    lesson.driveTime = 15;
     lesson.startMoment = moment(lesson.day_time, 'YYYY-MM-DDTHH:mm:ss Z');
     console.log(`Lesson ${lesson.id} starts at `,lesson.startMoment.format('LL LT'));
     lesson.endMoment = lesson.startMoment.clone().add(lesson.duration, 'minutes');
     console.log(`Lesson ${lesson.id} ends at `,lesson.endMoment.format('LL LT'));
   });
+  //lessons.forEach
+  lessons.forEach(lesson => {
+    let lessonBefore = lesson.startMoment.clone().subtract(lesson.driveTime, 'minutes').subtract(30, 'minutes');
+    lessonBefore.details = lessonBefore.format('LL LT');
+    let lessonAfter = lesson.endMoment.clone().add(lesson.driveTime, 'minutes');
+    lessonAfter.details = lessonAfter.format('LL LT');
+    schedule.availabilities.push(lessonBefore, lessonAfter);
+  })
+    //schedule.availabilities.push(startMoment.clone().subtract('DriveTime + lessonDuration'))
   schedule.lessons = lessons;
-
   //convert each lesson start_time and end_time to moment.js
   //startime = "15:30:00"
-}
-
-const fetchResponse = () => {
-  fetch('/api/')
-    .then(res => res.json());
 }
 
 // getTeachers();
