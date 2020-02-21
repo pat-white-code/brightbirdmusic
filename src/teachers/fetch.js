@@ -1,20 +1,28 @@
 const clientId = 1;
 //fetch students by studentId
-
-const student = {
-  instId: 1,
-  zipCode: 78746,
-  age: 6
-}
-
 let globalTeachers;
 
-async function getTeachers() {
-  let response = await (fetch(`http://127.0.0.1:4001/api/teachers/?instId=${student.instId}&zipCode=${student.zipCode}&studentAge=${student.age}`));
+async function getRequests(){
+  let response = await fetch(`http://127.0.0.1:4001/api/subscriptions/requests/client/${clientId}`);
+  let requests = await response.json();
+  console.log('REQUESTS', requests);
+  if(requests.length === 2) {getTeachersForTwo(requests)}
+  requests.forEach(getTeachers);
+}
+
+async function getTeachersForTwo(requests) {
+  let response = await fetch(`http://127.0.0.1:4001/api/teachers/two?instId=${requests[0].instrument_id}&zipCode=${requests[0].zip_code}&studentAge=${requests[0].student_age}&instId2=${requests[1].instrument_id}&studentAge2=${requests[1].student_age}`);
+  let teachers = await response.json();
+  teachers.forEach(teacher => teacher.combinedRequest = requests[0].lesson_duration + requests[1].lesson_duration);
+  console.log('TEACHERS FOR TWO, ', teachers);
+}
+
+async function getTeachers(request) {
+  let response = await (fetch(`http://127.0.0.1:4001/api/teachers/?instId=${request.instrument_id}&zipCode=${request.zip_code}&studentAge=${request.student_age}`));
   let teachers = await response.json();
   console.log('TEACHERS', teachers);
   teachers.forEach(getSchedule);
-  globalTeachers = teachers;
+  // globalTeachers = teachers;
 };
 
 async function getSchedule(teacher) {
@@ -44,7 +52,8 @@ const fetchResponse = () => {
     .then(res => res.json());
 }
 
-getTeachers();
+// getTeachers();
+getRequests();
 
 //add availability on each teacher.
 //for each teacher
