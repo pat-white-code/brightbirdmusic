@@ -1,3 +1,6 @@
+const clientId = 1;
+//fetch students by studentId
+
 const student = {
   instId: 1,
   zipCode: 78746,
@@ -24,7 +27,12 @@ async function getSchedule(teacher) {
 async function getLessons(schedule) {
   let request = await fetch(`http://127.0.0.1:4001/api/schedules/lessons/${schedule.id}`);
   let lessons = await request.json();
-  lessons.forEach(lesson => lesson.start_time = 'INSERT MOMENT HERE!');
+  lessons.forEach(lesson => {
+    lesson.startMoment = moment(lesson.day_time, 'YYYY-MM-DDTHH:mm:ss Z');
+    console.log(`Lesson ${lesson.id} starts at `,lesson.startMoment.format('LL LT'));
+    lesson.endMoment = lesson.startMoment.clone().add(lesson.duration, 'minutes');
+    console.log(`Lesson ${lesson.id} ends at `,lesson.endMoment.format('LL LT'));
+  });
   schedule.lessons = lessons;
 
   //convert each lesson start_time and end_time to moment.js

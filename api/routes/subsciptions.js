@@ -3,5 +3,6 @@ const router = express.Router();
 const controller = require('../controllers/subscriptions');
 
 router.get('/client/:client_id', controller.getClientSubscriptions);
+router.get('/requests/client/:clientId', controller.getClientRequests);
 
 module.exports = router;
