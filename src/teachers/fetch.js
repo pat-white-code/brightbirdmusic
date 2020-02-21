@@ -58,6 +58,8 @@ async function getLessons(schedule) {
   schedule.lessons = lessons;
   //convert each lesson start_time and end_time to moment.js
   //startime = "15:30:00"
+
+  // TODO: schedule.availabilities.filterConflicts(schedule.lessons)
 }
 
 // getTeachers();
