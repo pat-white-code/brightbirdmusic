@@ -24,6 +24,7 @@ async function getTeachers(request) {
   let teachers = await response.json();
   console.log(`TEACHERS FOR ${request.first_name} on ${request.instrument_name}`, teachers);
   teachers.forEach(getSchedule);
+  teachers.forEach(teacher => teacher.requestedTime = request.lesson_duration);
   globalTeachers.push(teachers);
 };
 
@@ -31,6 +32,7 @@ async function getSchedule(teacher) {
   let request = await fetch(`http://127.0.0.1:4001/api/schedules/${teacher.teacher_id}`);
   let schedule = await request.json();
   teacher.schedule = schedule;
+  schedule.forEach(schedule => schedule.requestedTime = teacher.requestedTime);
   teacher.schedule.forEach(getLessons);
 }
 
@@ -48,7 +50,7 @@ async function getLessons(schedule) {
   });
   //lessons.forEach
   lessons.forEach(lesson => {
-    let lessonBefore = lesson.startMoment.clone().subtract(lesson.driveTime, 'minutes').subtract(30, 'minutes');
+    let lessonBefore = lesson.startMoment.clone().subtract(lesson.driveTime, 'minutes').subtract(schedule.requestedTime, 'minutes');
     lessonBefore.details = lessonBefore.format('LL LT');
     let lessonAfter = lesson.endMoment.clone().add(lesson.driveTime, 'minutes');
     lessonAfter.details = lessonAfter.format('LL LT');
