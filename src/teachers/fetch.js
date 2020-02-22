@@ -4,6 +4,7 @@ let globalTeachers = [];
 let globalClient = {};
 let globalRequests = [];
 
+
 async function getRequests(){
   let response = await fetch(`http://127.0.0.1:4001/api/subscriptions/requests/client/${clientId}`);
   let requests = await response.json();
@@ -12,7 +13,20 @@ async function getRequests(){
   if(requests.length === 2) {getTeachersForTwo(requests)}
   requests.forEach(getTeachers);
   globalRequests.push(requests);
+  // requests.forEach(request => console.log('*********', request.availableTeachers));
+  // globalRequests[0].forEach(calculateAvailability);
 }
+
+// async function calculateAvailability (request) {
+
+//   request.availableTeachers.forEach(teacher => {
+//     teacher.schedules.forEach(schedule => {
+//       schedule.lessons.forEach((lesson, index) => {
+//         console.log(request.lesson_duration, request.instrument_id, index, index+1, lesson.startMoment, lesson.endMoment)
+//       })
+//     })
+//   })
+// };
 
 async function getTeachersForTwo(requests) {
   let response = await fetch(`http://127.0.0.1:4001/api/teachers/two?instId=${requests[0].instrument_id}&zipCode=${requests[0].zip_code}&studentAge=${requests[0].student_age}&instId2=${requests[1].instrument_id}&studentAge2=${requests[1].student_age}`);
@@ -50,7 +64,7 @@ async function getLessons(schedule) {
     lesson.endMoment = lesson.startMoment.clone().add(lesson.duration, 'minutes');
     console.log(`Lesson ${lesson.id} ends at `,lesson.endMoment.format('LL LT'));
   });
-  //lessons.forEach
+
   lessons.forEach(lesson => {
     let lessonBefore = lesson.startMoment.clone().subtract(lesson.driveTime, 'minutes').subtract(schedule.requestedTime, 'minutes');
     lessonBefore.details = lessonBefore.format('LL LT');
