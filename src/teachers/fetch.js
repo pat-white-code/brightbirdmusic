@@ -2,6 +2,7 @@ const clientId = 1;
 //fetch students by studentId
 let globalTeachers = [];
 let globalClient = {};
+let globalRequests = [];
 
 async function getRequests(){
   let response = await fetch(`http://127.0.0.1:4001/api/subscriptions/requests/client/${clientId}`);
@@ -10,6 +11,7 @@ async function getRequests(){
   globalClient.zipCode = requests[0].zip_code;
   if(requests.length === 2) {getTeachersForTwo(requests)}
   requests.forEach(getTeachers);
+  globalRequests.push(requests);
 }
 
 async function getTeachersForTwo(requests) {
@@ -25,7 +27,7 @@ async function getTeachers(request) {
   console.log(`TEACHERS FOR ${request.first_name} on ${request.instrument_name}`, teachers);
   teachers.forEach(getSchedule);
   teachers.forEach(teacher => teacher.requestedTime = request.lesson_duration);
-  globalTeachers.push(teachers);
+  request.availableTeachers = teachers;
 };
 
 async function getSchedule(teacher) {
@@ -56,11 +58,21 @@ async function getLessons(schedule) {
     lessonAfter.details = lessonAfter.format('LL LT');
     schedule.availabilities.push(lessonBefore, lessonAfter);
   })
-    //schedule.availabilities.push(startMoment.clone().subtract('DriveTime + lessonDuration'))
-  schedule.lessons = lessons;
-  //convert each lesson start_time and end_time to moment.js
-  //startime = "15:30:00"
+  //schedule.availabilities.push(startMoment.clone().subtract('DriveTime + lessonDuration'))
+  for(let i = 0 ; i < lessons.length ; i++) {
+    let thisLesson = lessons[i];
+    let nextLesson = lessons[i+1];
+    let prevLesson = lessons[i-1];
+    thisLesson.openEnded = true;
+    if(prevLesson && nextLesson) {
+      //if next lesson starts in 30-minutes or less, AND previous lesson ended in 30-minutes or less, consider this lesson LOCKED. there is no room to schedule lesssons before/after, so it is not worth calculating the drive time or doing any other calculations
 
+      if(nextLesson.startMoment - thisLesson.endMoment <= 180000 && thisLesson.startMoment - prevLesson.endMoment <= 180000) {
+        thisLesson.openEnded = false;
+      }
+    }
+  }
+  schedule.lessons = lessons;
   // TODO: schedule.availabilities.filterConflicts(schedule.lessons)
 }
 
