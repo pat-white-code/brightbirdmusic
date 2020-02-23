@@ -47,7 +47,19 @@ async function getTeachers(request) {
 async function getSchedule(teacher) {
   let request = await fetch(`http://127.0.0.1:4001/api/schedules/${teacher.teacher_id}`);
   let schedule = await request.json();
+  schedule.forEach(schedule => {
+    //converts each schedule start_time / end_time to moment.js objects.
+    schedule.startTime = moment(schedule.start_time, 'YYYY-MM-DDTHH:mm:ss Z');
+    schedule.endTime = moment(schedule.end_time, 'YYYY-MM-DDTHH:mm:ss Z');
+
+    //formats start/times and end times for easier reading
+    schedule.start_time = schedule.startTime.format('LL LT');
+    schedule.end_time = schedule.endTime.format('LL LT');
+  })
+  //attaches schedule to teacher object
   teacher.schedule = schedule;
+
+  //passes the requested time to the schedule object so it can be accessed by the lesson object
   schedule.forEach(schedule => schedule.requestedTime = teacher.requestedTime);
   teacher.schedule.forEach(getLessons);
 }
@@ -74,9 +86,9 @@ async function getLessons(schedule) {
   // })
   //schedule.availabilities.push(startMoment.clone().subtract('DriveTime + lessonDuration'))
   for(let i = 0 ; i < lessons.length ; i++) {
-    let driveTime;
-    let lessonAfter;
-    let lessonBefore;
+    // let driveTime;
+    // let lessonAfter;
+    // let lessonBefore;
     let thisLesson = lessons[i];
     let nextLesson = lessons[i+1];
     let prevLesson = lessons[i-1];
@@ -88,9 +100,12 @@ async function getLessons(schedule) {
         thisLesson.openEnded = false;
       }
     }
+
     if (thisLesson.openEnded){
-      //calculate drive time
-      thisLesson.driveTime = 15;
+      //calculate drive time if it has not yet been calculated
+      if(!thisLesson.driveTime) {
+        thisLesson.driveTime = 15;
+      }
 
       availabilityAfter = {
         lesson_duration: schedule.requestedTime,
@@ -113,7 +128,9 @@ async function getLessons(schedule) {
       //if there is no next lesson, see if lead lesson conflicts with schedule.endTime. if it does not conflict, add it to the availabilities
       if(!nextLesson) {
         //to do this, we have to convert teacher start_times/end_times to date-time-stamps and convert it to moment object.
-        if(availabilityAfter.endMoment.clone()){}
+        if(availabilityAfter.endMoment.valueOf() < schedule.endTime.valueOf()) {
+          schedule.availabilities.push(availabilityAfter)
+        }
       }
     }
   }
