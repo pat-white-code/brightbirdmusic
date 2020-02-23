@@ -3,7 +3,7 @@ const pool = require('../../../mysql/connection');
 
 const getLessonsByScheduleId = (req, res) => {
   let sql = `
-    SELECT lessons.id, day_time, duration, start_time, end_time, addresses.address
+    SELECT lessons.id, day_time, duration, lessons.start_time, lessons.end_time, addresses.address
     FROM lessons
     JOIN schedules
       ON lessons.schedule_id = schedules.id

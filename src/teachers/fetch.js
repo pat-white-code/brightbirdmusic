@@ -36,7 +36,7 @@ async function getTeachersForTwo(requests) {
 }
 
 async function getTeachers(request) {
-  let response = await (fetch(`http://127.0.0.1:4001/api/teachers/?instId=${request.instrument_id}&zipCode=${request.zip_code}&studentAge=${request.student_age}`));
+  let response = await fetch(`http://127.0.0.1:4001/api/teachers/?instId=${request.instrument_id}&zipCode=${request.zip_code}&studentAge=${request.student_age}`);
   let teachers = await response.json();
   console.log(`TEACHERS FOR ${request.first_name} on ${request.instrument_name}`, teachers);
   teachers.forEach(getSchedule);
@@ -113,7 +113,7 @@ async function getLessons(schedule) {
       //if there is no next lesson, see if lead lesson conflicts with schedule.endTime. if it does not conflict, add it to the availabilities
       if(!nextLesson) {
         //to do this, we have to convert teacher start_times/end_times to date-time-stamps and convert it to moment object.
-        if(availabilityAfter.endMoment.clone())
+        if(availabilityAfter.endMoment.clone()){}
       }
     }
   }
