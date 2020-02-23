@@ -105,6 +105,7 @@ async function getLessons(schedule) {
       //calculate drive time if it has not yet been calculated
       if(!thisLesson.driveTime) {
         thisLesson.driveTime = 15;
+      //if drive time is greater than teacher's drive time, return
       }
 
       availabilityAfter = {
@@ -117,8 +118,10 @@ async function getLessons(schedule) {
       if(nextLesson) {
         //if there is a next lesson, calculate the drive time from new lesson to next lesson
         //calculate drivetime
-        nextLesson.driveTime = 15;
-
+        if(!nextLesson.driveTime) {
+          nextLesson.driveTime = 15;
+          //if drive time is greater than teacher's drive time, return
+        }
         //if lead lesson endTime + drive to next lesson does not conflict, add lesson to availabilities
         if(availabilityAfter.endMoment.clone().add(nextLesson.DriveTime, 'minutes').valueOf() < nextLesson.startMoment.valueOf()) {
           schedule.availabilities.push(availabilityAfter);
@@ -132,6 +135,32 @@ async function getLessons(schedule) {
           schedule.availabilities.push(availabilityAfter)
         }
       }
+
+      availabilityBefore = {
+        lessonDuration: schedule.requestedTime,
+        startMoment: thisLesson.startMoment.clone().subtract(thisLesson.driveTime, 'minutes').subtract(schedule.requestedTime, 'minutes')
+      }
+      availabilityBefore.description = availabilityBefore.startMoment.format('LL LT');
+
+      if(prevLesson) {
+        if(!prevLesson.driveTime) {
+          //fetch drivetime 
+          prevLesson.driveTime = 15;
+        }
+        //if availabilityBefore.startMoment is less than prevLesson.endtime + prevLesson.driveTime
+        //if i have a lesson at 4:00 PM and the drive time is 20 min, availabilityBefore start time is 3:10 PM.
+
+        //if i have a lesson that ends at 3:00 PM but is 20 minutes away, it will conflict
+        if(availabilityBefore.startMoment.clone().subtract(prevLesson.driveTime, 'minutes').valueOf() > prevLesson.endMoment.valueOf()){
+          schedule.availabilities.push(availabilityBefore)
+        }
+      }
+      if(!prevLesson) {
+        //if there is no previous lesson, and if availabilityBefore is not before the teacher's start time
+        if(availabilityBefore.startMoment.valueOf() > schedule.startTime.valueOf()) {
+          schedule.availabilities.push(availabilityBefore)
+        }
+      }
     }
   }
   //if openended = true, calculate drive time,
@@ -143,7 +172,6 @@ async function getLessons(schedule) {
   //calculate drive time
   //create lesson at current lesson end + drive time
   schedule.lessons = lessons;
-  // TODO: schedule.availabilities.filterConflicts(schedule.lessons)
 }
 
 // getTeachers();
