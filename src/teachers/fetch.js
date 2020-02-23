@@ -65,27 +65,66 @@ async function getLessons(schedule) {
     console.log(`Lesson ${lesson.id} ends at `,lesson.endMoment.format('LL LT'));
   });
 
-  lessons.forEach(lesson => {
-    let lessonBefore = lesson.startMoment.clone().subtract(lesson.driveTime, 'minutes').subtract(schedule.requestedTime, 'minutes');
-    lessonBefore.details = lessonBefore.format('LL LT');
-    let lessonAfter = lesson.endMoment.clone().add(lesson.driveTime, 'minutes');
-    lessonAfter.details = lessonAfter.format('LL LT');
-    schedule.availabilities.push(lessonBefore, lessonAfter);
-  })
+  // lessons.forEach(lesson => {
+  //   let lessonBefore = lesson.startMoment.clone().subtract(lesson.driveTime, 'minutes').subtract(schedule.requestedTime, 'minutes');
+  //   lessonBefore.details = lessonBefore.format('LL LT');
+  //   let lessonAfter = lesson.endMoment.clone().add(lesson.driveTime, 'minutes');
+  //   lessonAfter.details = lessonAfter.format('LL LT');
+  //   schedule.availabilities.push(lessonBefore, lessonAfter);
+  // })
   //schedule.availabilities.push(startMoment.clone().subtract('DriveTime + lessonDuration'))
   for(let i = 0 ; i < lessons.length ; i++) {
+    let driveTime;
+    let lessonAfter;
+    let lessonBefore;
     let thisLesson = lessons[i];
     let nextLesson = lessons[i+1];
     let prevLesson = lessons[i-1];
     thisLesson.openEnded = true;
     if(prevLesson && nextLesson) {
-      //if next lesson starts in 30-minutes or less, AND previous lesson ended in 30-minutes or less, consider this lesson LOCKED. there is no room to schedule lesssons before/after, so it is not worth calculating the drive time or doing any other calculations
 
+      //if next lesson starts in 30-minutes or less, AND previous lesson ended in 30-minutes or less, consider this lesson LOCKED. there is no room to schedule lesssons before/after, so it is not worth calculating the drive time or doing any other calculations
       if(nextLesson.startMoment - thisLesson.endMoment <= 180000 && thisLesson.startMoment - prevLesson.endMoment <= 180000) {
         thisLesson.openEnded = false;
       }
     }
+    if (thisLesson.openEnded){
+      //calculate drive time
+      thisLesson.driveTime = 15;
+
+      availabilityAfter = {
+        lesson_duration: schedule.requestedTime,
+        startMoment: thisLesson.endMoment.clone().add(thisLesson.driveTime, 'minutes')
+      }
+      availabilityAfter.endMoment = availabilityAfter.startMoment.clone().add(schedule.requestedTime, 'minutes');
+      availabilityAfter.description = availabilityAfter.startMoment.format('LL LT');
+
+      if(nextLesson) {
+        //if there is a next lesson, calculate the drive time from new lesson to next lesson
+        //calculate drivetime
+        nextLesson.driveTime = 15;
+
+        //if lead lesson endTime + drive to next lesson does not conflict, add lesson to availabilities
+        if(availabilityAfter.endMoment.clone().add(nextLesson.DriveTime, 'minutes').valueOf() < nextLesson.startMoment.valueOf()) {
+          schedule.availabilities.push(availabilityAfter);
+        }
+      }
+
+      //if there is no next lesson, see if lead lesson conflicts with schedule.endTime. if it does not conflict, add it to the availabilities
+      if(!nextLesson) {
+        //to do this, we have to convert teacher start_times/end_times to date-time-stamps and convert it to moment object.
+        if(availabilityAfter.endMoment.clone())
+      }
+    }
   }
+  //if openended = true, calculate drive time,
+  //create new lesson before and after this lesson
+  //lesson after this lesson has a start time of current lesson momentEnd + drive time in minutes
+  //if lessonAfter end time + next lesson drive time is greater than next lesson start time, do nothing. otherwise, add it to availability
+
+  //filter out only openended lessons
+  //calculate drive time
+  //create lesson at current lesson end + drive time
   schedule.lessons = lessons;
   // TODO: schedule.availabilities.filterConflicts(schedule.lessons)
 }
