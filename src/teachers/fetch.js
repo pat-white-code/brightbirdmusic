@@ -96,7 +96,6 @@ async function getLessons(schedule) {
   schedule.availabilities = [];
   let request = await fetch(`http://127.0.0.1:4001/api/schedules/lessons/${schedule.id}`);
   let lessons = await request.json();
-  
   lessons.forEach(lesson => {
     //converts lesson start times / end times to moment.js objects
     lesson.startMoment = moment(lesson.day_time, 'YYYY-MM-DDTHH:mm:ss Z');
@@ -108,41 +107,39 @@ async function getLessons(schedule) {
     fetchDriveTime(lesson, schedule);
   })
   schedule.lessons = lessons;
-  Promise.all(promises)
-    .then(()=> {
-      for(let i = 0 ; i < lessons.length ; i++) {
-        let thisLesson = lessons[i];
-        let nextLesson = lessons[i+1];
-        let prevLesson = lessons[i-1];
-        if(nextLesson) {
-          //if lead lesson endTime + drive to next lesson does not conflict, add lesson to availabilities
-          if(thisLesson.availabilityAfter.endMoment.clone().add(nextLesson.driveTime, 'minutes').valueOf() < nextLesson.startMoment.valueOf()) {
-            schedule.availabilities.push(thisLesson.availabilityAfter);
-          }
-        }
-        if(!nextLesson) {
-          //to do this, we have to convert teacher start_times/end_times to date-time-stamps and convert it to moment object.
-          if(thisLesson.availabilityAfter.endMoment.valueOf() < schedule.endTime.valueOf()) {
-            schedule.availabilities.push(thisLesson.availabilityAfter)
-          }
-        }
-
-        if(prevLesson) {
-          //if i have a lesson that ends at 3:00 PM but is 20 minutes away, it will conflict
-          if(availabilityBefore.startMoment.clone().subtract(prevLesson.driveTime, 'minutes').valueOf() > prevLesson.endMoment.valueOf()){
-            schedule.availabilities.push(availabilityBefore)
-          }
-        }
-
-        if(!prevLesson) {
-          //if there is no previous lesson, and if availabilityBefore is not before the teacher's start time
-          if(availabilityBefore.startMoment.valueOf() > schedule.startTime.valueOf()) {
-            schedule.availabilities.push(availabilityBefore)
-          }
-        }
+  let resolved = await Promise.all(promises);
+  for(let i = 0 ; i < lessons.length ; i++) {
+    let thisLesson = lessons[i];
+    let nextLesson = lessons[i+1];
+    let prevLesson = lessons[i-1];
+    if(nextLesson) {
+      //if lead lesson endTime + drive to next lesson does not conflict, add lesson to availabilities
+      if(thisLesson.availabilityAfter.endMoment.clone().add(nextLesson.driveTime, 'minutes').valueOf() < nextLesson.startMoment.valueOf()) {
+        schedule.availabilities.push(thisLesson.availabilityAfter);
       }
     }
-  )
+
+    if(!nextLesson) {
+      //to do this, we have to convert teacher start_times/end_times to date-time-stamps and convert it to moment object.
+      if(thisLesson.availabilityAfter.endMoment.valueOf() < schedule.endTime.valueOf()) {
+        schedule.availabilities.push(thisLesson.availabilityAfter)
+      }
+    }
+
+    if(prevLesson) {
+      //if i have a lesson that ends at 3:00 PM but is 20 minutes away, it will conflict
+      if(availabilityBefore.startMoment.clone().subtract(prevLesson.driveTime, 'minutes').valueOf() > prevLesson.endMoment.valueOf()){
+        schedule.availabilities.push(availabilityBefore)
+      }
+    }
+
+    if(!prevLesson) {
+      //if there is no previous lesson, and if availabilityBefore is not before the teacher's start time
+      if(availabilityBefore.startMoment.valueOf() > schedule.startTime.valueOf()) {
+        schedule.availabilities.push(availabilityBefore)
+      }
+    }
+  }
 }
 
 async function filterConflicts(lessonsArr, schedule){
@@ -152,13 +149,4 @@ async function filterConflicts(lessonsArr, schedule){
   }
 }
 
-// getTeachers();
 getRequests();
-
-//add availability on each teacher.
-//for each teacher
-  //for each schedule,
-    //for each lesson
-
-    //create a new lessons starts at current lesson - drive time - lesson duration
-    // create a new lesson: starts at currentLesson.endTime + drive time
