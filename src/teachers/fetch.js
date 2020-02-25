@@ -1,9 +1,9 @@
 const clientId = 1;
-//fetch students by studentId
+// fetch students by studentId
 let globalTeachers = [];
 let globalClient = {};
 let globalRequests = [];
-
+var directionsService = new google.maps.DirectionsService()
 
 async function getRequests(){
   let response = await fetch(`http://127.0.0.1:4001/api/subscriptions/requests/client/${clientId}`);
@@ -40,6 +40,7 @@ async function getTeachers(request) {
   let teachers = await response.json();
   console.log(`TEACHERS FOR ${request.first_name} on ${request.instrument_name}`, teachers);
   teachers.forEach(getSchedule);
+  teachers.forEach(teacher => teacher.requestedAddress = request.address);
   teachers.forEach(teacher => teacher.requestedTime = request.lesson_duration);
   request.availableTeachers = teachers;
 };
@@ -61,20 +62,37 @@ async function getSchedule(teacher) {
 
   //passes the requested time to the schedule object so it can be accessed by the lesson object
   schedule.forEach(schedule => schedule.requestedTime = teacher.requestedTime);
+  schedule.forEach(schedule => schedule.requestedAddress = teacher.requestedAddress);
   teacher.schedule.forEach(getLessons);
+}
+
+async function fetchDriveTime(lesson, address) {
+  let request = {
+    origin: lesson.address,
+    destination: address,
+    travelMode: 'DRIVING',
+  }
+  await directionsService.route(request, (result, status) => {
+    if (status == 'OK') {
+      console.log(result)
+      lesson.driveTime = result.routes[0].legs[0].duration.value / 60;
+    }
+  });
 }
 
 async function getLessons(schedule) {
   schedule.availabilities = [];
   let request = await fetch(`http://127.0.0.1:4001/api/schedules/lessons/${schedule.id}`);
   let lessons = await request.json();
+  
   lessons.forEach(lesson => {
-    // DUMMY CODE --- FETCH drivetime from google using globalClient.address
-    lesson.driveTime = 15;
+    //converts lesson start times / end times to moment.js objects
     lesson.startMoment = moment(lesson.day_time, 'YYYY-MM-DDTHH:mm:ss Z');
     console.log(`Lesson ${lesson.id} starts at `,lesson.startMoment.format('LL LT'));
     lesson.endMoment = lesson.startMoment.clone().add(lesson.duration, 'minutes');
     console.log(`Lesson ${lesson.id} ends at `,lesson.endMoment.format('LL LT'));
+
+    fetchDriveTime(lesson, schedule.requestedAddress)
   });
 
   // lessons.forEach(lesson => {
@@ -103,10 +121,31 @@ async function getLessons(schedule) {
 
     if (thisLesson.openEnded){
       //calculate drive time if it has not yet been calculated
-      if(!thisLesson.driveTime) {
-        thisLesson.driveTime = 15;
-      //if drive time is greater than teacher's drive time, return
-      }
+      let originAddress = thisLesson.address;
+      let destinationAddress = schedule.requestedAddress;
+      // if(!thisLesson.driveTime) {
+      //   let request = {
+      //     origin: originAddress,
+      //     destination: destinationAddress,
+      //     travelMode: 'DRIVING',
+      //     transitOptions: null,
+      //     drivingOptions: null,
+      //     waypoints: null,
+      //     optimizeWaypoints: false,
+      //     provideRouteAlternatives: false,
+      //     avoidFerries: false,
+      //     avoidHighways: false,
+      //     avoidTolls: false,
+      //     region: null
+      //   }
+      //   directionsService.route(request, (result, status) => {
+      //     if (status == 'OK') {
+      //       console.log(result)
+      //       thisLesson.driveTime = result.routes[0].legs[0].duration.value / 60;
+      //     }
+      //   });
+      // //if drive time is greater than teacher's drive time, return
+      // }
 
       availabilityAfter = {
         lesson_duration: schedule.requestedTime,
@@ -118,12 +157,31 @@ async function getLessons(schedule) {
       if(nextLesson) {
         //if there is a next lesson, calculate the drive time from new lesson to next lesson
         //calculate drivetime
-        if(!nextLesson.driveTime) {
-          nextLesson.driveTime = 15;
-          //if drive time is greater than teacher's drive time, return
-        }
+        // if(!nextLesson.driveTime) {
+        //   let request = {
+        //     origin: schedule.requestedAddress,
+        //     destination: nextLesson.address,
+        //     travelMode: 'DRIVING',
+        //     transitOptions: null,
+        //     drivingOptions: null,
+        //     waypoints: null,
+        //     optimizeWaypoints: false,
+        //     provideRouteAlternatives: false,
+        //     avoidFerries: false,
+        //     avoidHighways: false,
+        //     avoidTolls: false,
+        //     region: null
+        //   }
+        //   directionsService.route(request, (result, status) => {
+        //     if (status == 'OK') {
+        //       console.log(result)
+        //       nextLesson.driveTime = result.routes[0].legs[0].duration.value / 60;
+        //     }
+        //   });
+        //   //if drive time is greater than teacher's drive time, return
+        // }
         //if lead lesson endTime + drive to next lesson does not conflict, add lesson to availabilities
-        if(availabilityAfter.endMoment.clone().add(nextLesson.DriveTime, 'minutes').valueOf() < nextLesson.startMoment.valueOf()) {
+        if(availabilityAfter.endMoment.clone().add(nextLesson.driveTime, 'minutes').valueOf() < nextLesson.startMoment.valueOf()) {
           schedule.availabilities.push(availabilityAfter);
         }
       }
@@ -143,10 +201,29 @@ async function getLessons(schedule) {
       availabilityBefore.description = availabilityBefore.startMoment.format('LL LT');
 
       if(prevLesson) {
-        if(!prevLesson.driveTime) {
-          //fetch drivetime 
-          prevLesson.driveTime = 15;
-        }
+        // if(!prevLesson.driveTime) {
+        //   //fetch drivetime 
+        //   let request = {
+        //     origin: prevLesson.address,
+        //     destination: schedule.requestedAddress,
+        //     travelMode: 'DRIVING',
+        //     transitOptions: null,
+        //     drivingOptions: null,
+        //     waypoints: null,
+        //     optimizeWaypoints: false,
+        //     provideRouteAlternatives: false,
+        //     avoidFerries: false,
+        //     avoidHighways: false,
+        //     avoidTolls: false,
+        //     region: null
+        //   }
+        //   directionsService.route(request, (result, status) => {
+        //     if (status == 'OK') {
+        //       console.log(result)
+        //       prevLesson.driveTime = result.routes[0].legs[0].duration.value / 60;
+        //     }
+        //   });
+        // }
         //if availabilityBefore.startMoment is less than prevLesson.endtime + prevLesson.driveTime
         //if i have a lesson at 4:00 PM and the drive time is 20 min, availabilityBefore start time is 3:10 PM.
 
