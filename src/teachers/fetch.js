@@ -66,17 +66,29 @@ async function getSchedule(teacher) {
   teacher.schedule.forEach(getLessons);
 }
 
-async function fetchDriveTime(lesson, address) {
+async function fetchDriveTime(lesson, schedule) {
   let request = {
     origin: lesson.address,
-    destination: address,
+    destination: schedule.requestedAddress,
     travelMode: 'DRIVING',
   }
   await directionsService.route(request, (result, status) => {
     if (status == 'OK') {
       console.log(result)
-      lesson.driveTime = result.routes[0].legs[0].duration.value / 60;
+      lesson.driveTime = Math.ceil(result.routes[0].legs[0].duration.value / 60);
     }
+    lesson.availabilityAfter = {
+      lesson_duration: schedule.requestedTime,
+      startMoment: lesson.endMoment.clone().add(lesson.driveTime, 'minutes')  
+    }
+    lesson.availabilityAfter.endMoment = lesson.availabilityAfter.startMoment.clone().add(schedule.requestedTime, 'minutes');
+    lesson.availabilityAfter.description = lesson.availabilityAfter.startMoment.format('LL LT');
+
+    lesson.availabilityBefore = {
+      lesson_duration: schedule.requestedTime,
+      startMoment: lesson.startMoment.clone().subtract(lesson.driveTime, 'minutes').subtract(schedule.requestedTime, 'minutes')
+    }
+    lesson.availabilityBefore.description = lesson.availabilityBefore.startMoment.format('LL LT');
   });
 }
 
@@ -91,164 +103,53 @@ async function getLessons(schedule) {
     console.log(`Lesson ${lesson.id} starts at `,lesson.startMoment.format('LL LT'));
     lesson.endMoment = lesson.startMoment.clone().add(lesson.duration, 'minutes');
     console.log(`Lesson ${lesson.id} ends at `,lesson.endMoment.format('LL LT'));
-
-    fetchDriveTime(lesson, schedule.requestedAddress)
   });
-
-  // lessons.forEach(lesson => {
-  //   let lessonBefore = lesson.startMoment.clone().subtract(lesson.driveTime, 'minutes').subtract(schedule.requestedTime, 'minutes');
-  //   lessonBefore.details = lessonBefore.format('LL LT');
-  //   let lessonAfter = lesson.endMoment.clone().add(lesson.driveTime, 'minutes');
-  //   lessonAfter.details = lessonAfter.format('LL LT');
-  //   schedule.availabilities.push(lessonBefore, lessonAfter);
-  // })
-  //schedule.availabilities.push(startMoment.clone().subtract('DriveTime + lessonDuration'))
-  for(let i = 0 ; i < lessons.length ; i++) {
-    // let driveTime;
-    // let lessonAfter;
-    // let lessonBefore;
-    let thisLesson = lessons[i];
-    let nextLesson = lessons[i+1];
-    let prevLesson = lessons[i-1];
-    thisLesson.openEnded = true;
-    if(prevLesson && nextLesson) {
-
-      //if next lesson starts in 30-minutes or less, AND previous lesson ended in 30-minutes or less, consider this lesson LOCKED. there is no room to schedule lesssons before/after, so it is not worth calculating the drive time or doing any other calculations
-      if(nextLesson.startMoment - thisLesson.endMoment <= 180000 && thisLesson.startMoment - prevLesson.endMoment <= 180000) {
-        thisLesson.openEnded = false;
-      }
-    }
-
-    if (thisLesson.openEnded){
-      //calculate drive time if it has not yet been calculated
-      let originAddress = thisLesson.address;
-      let destinationAddress = schedule.requestedAddress;
-      // if(!thisLesson.driveTime) {
-      //   let request = {
-      //     origin: originAddress,
-      //     destination: destinationAddress,
-      //     travelMode: 'DRIVING',
-      //     transitOptions: null,
-      //     drivingOptions: null,
-      //     waypoints: null,
-      //     optimizeWaypoints: false,
-      //     provideRouteAlternatives: false,
-      //     avoidFerries: false,
-      //     avoidHighways: false,
-      //     avoidTolls: false,
-      //     region: null
-      //   }
-      //   directionsService.route(request, (result, status) => {
-      //     if (status == 'OK') {
-      //       console.log(result)
-      //       thisLesson.driveTime = result.routes[0].legs[0].duration.value / 60;
-      //     }
-      //   });
-      // //if drive time is greater than teacher's drive time, return
-      // }
-
-      availabilityAfter = {
-        lesson_duration: schedule.requestedTime,
-        startMoment: thisLesson.endMoment.clone().add(thisLesson.driveTime, 'minutes')
-      }
-      availabilityAfter.endMoment = availabilityAfter.startMoment.clone().add(schedule.requestedTime, 'minutes');
-      availabilityAfter.description = availabilityAfter.startMoment.format('LL LT');
-
-      if(nextLesson) {
-        //if there is a next lesson, calculate the drive time from new lesson to next lesson
-        //calculate drivetime
-        // if(!nextLesson.driveTime) {
-        //   let request = {
-        //     origin: schedule.requestedAddress,
-        //     destination: nextLesson.address,
-        //     travelMode: 'DRIVING',
-        //     transitOptions: null,
-        //     drivingOptions: null,
-        //     waypoints: null,
-        //     optimizeWaypoints: false,
-        //     provideRouteAlternatives: false,
-        //     avoidFerries: false,
-        //     avoidHighways: false,
-        //     avoidTolls: false,
-        //     region: null
-        //   }
-        //   directionsService.route(request, (result, status) => {
-        //     if (status == 'OK') {
-        //       console.log(result)
-        //       nextLesson.driveTime = result.routes[0].legs[0].duration.value / 60;
-        //     }
-        //   });
-        //   //if drive time is greater than teacher's drive time, return
-        // }
-        //if lead lesson endTime + drive to next lesson does not conflict, add lesson to availabilities
-        if(availabilityAfter.endMoment.clone().add(nextLesson.driveTime, 'minutes').valueOf() < nextLesson.startMoment.valueOf()) {
-          schedule.availabilities.push(availabilityAfter);
-        }
-      }
-
-      //if there is no next lesson, see if lead lesson conflicts with schedule.endTime. if it does not conflict, add it to the availabilities
-      if(!nextLesson) {
-        //to do this, we have to convert teacher start_times/end_times to date-time-stamps and convert it to moment object.
-        if(availabilityAfter.endMoment.valueOf() < schedule.endTime.valueOf()) {
-          schedule.availabilities.push(availabilityAfter)
-        }
-      }
-
-      availabilityBefore = {
-        lessonDuration: schedule.requestedTime,
-        startMoment: thisLesson.startMoment.clone().subtract(thisLesson.driveTime, 'minutes').subtract(schedule.requestedTime, 'minutes')
-      }
-      availabilityBefore.description = availabilityBefore.startMoment.format('LL LT');
-
-      if(prevLesson) {
-        // if(!prevLesson.driveTime) {
-        //   //fetch drivetime 
-        //   let request = {
-        //     origin: prevLesson.address,
-        //     destination: schedule.requestedAddress,
-        //     travelMode: 'DRIVING',
-        //     transitOptions: null,
-        //     drivingOptions: null,
-        //     waypoints: null,
-        //     optimizeWaypoints: false,
-        //     provideRouteAlternatives: false,
-        //     avoidFerries: false,
-        //     avoidHighways: false,
-        //     avoidTolls: false,
-        //     region: null
-        //   }
-        //   directionsService.route(request, (result, status) => {
-        //     if (status == 'OK') {
-        //       console.log(result)
-        //       prevLesson.driveTime = result.routes[0].legs[0].duration.value / 60;
-        //     }
-        //   });
-        // }
-        //if availabilityBefore.startMoment is less than prevLesson.endtime + prevLesson.driveTime
-        //if i have a lesson at 4:00 PM and the drive time is 20 min, availabilityBefore start time is 3:10 PM.
-
-        //if i have a lesson that ends at 3:00 PM but is 20 minutes away, it will conflict
-        if(availabilityBefore.startMoment.clone().subtract(prevLesson.driveTime, 'minutes').valueOf() > prevLesson.endMoment.valueOf()){
-          schedule.availabilities.push(availabilityBefore)
-        }
-      }
-      if(!prevLesson) {
-        //if there is no previous lesson, and if availabilityBefore is not before the teacher's start time
-        if(availabilityBefore.startMoment.valueOf() > schedule.startTime.valueOf()) {
-          schedule.availabilities.push(availabilityBefore)
-        }
-      }
-    }
-  }
-  //if openended = true, calculate drive time,
-  //create new lesson before and after this lesson
-  //lesson after this lesson has a start time of current lesson momentEnd + drive time in minutes
-  //if lessonAfter end time + next lesson drive time is greater than next lesson start time, do nothing. otherwise, add it to availability
-
-  //filter out only openended lessons
-  //calculate drive time
-  //create lesson at current lesson end + drive time
+  let promises = lessons.map(lesson => {
+    fetchDriveTime(lesson, schedule);
+  })
   schedule.lessons = lessons;
+  Promise.all(promises)
+    .then(()=> {
+      for(let i = 0 ; i < lessons.length ; i++) {
+        let thisLesson = lessons[i];
+        let nextLesson = lessons[i+1];
+        let prevLesson = lessons[i-1];
+        if(nextLesson) {
+          //if lead lesson endTime + drive to next lesson does not conflict, add lesson to availabilities
+          if(thisLesson.availabilityAfter.endMoment.clone().add(nextLesson.driveTime, 'minutes').valueOf() < nextLesson.startMoment.valueOf()) {
+            schedule.availabilities.push(thisLesson.availabilityAfter);
+          }
+        }
+        if(!nextLesson) {
+          //to do this, we have to convert teacher start_times/end_times to date-time-stamps and convert it to moment object.
+          if(thisLesson.availabilityAfter.endMoment.valueOf() < schedule.endTime.valueOf()) {
+            schedule.availabilities.push(thisLesson.availabilityAfter)
+          }
+        }
+
+        if(prevLesson) {
+          //if i have a lesson that ends at 3:00 PM but is 20 minutes away, it will conflict
+          if(availabilityBefore.startMoment.clone().subtract(prevLesson.driveTime, 'minutes').valueOf() > prevLesson.endMoment.valueOf()){
+            schedule.availabilities.push(availabilityBefore)
+          }
+        }
+
+        if(!prevLesson) {
+          //if there is no previous lesson, and if availabilityBefore is not before the teacher's start time
+          if(availabilityBefore.startMoment.valueOf() > schedule.startTime.valueOf()) {
+            schedule.availabilities.push(availabilityBefore)
+          }
+        }
+      }
+    }
+  )
+}
+
+async function filterConflicts(lessonsArr, schedule){
+  
+  for(let i = 0; i < lessonsArr.lengh ; i++) {
+
+  }
 }
 
 // getTeachers();
