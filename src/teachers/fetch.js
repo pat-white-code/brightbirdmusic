@@ -14,8 +14,6 @@ async function getRequests(){
   if(requests.length === 2) {getTeachersForTwo(requests)}
   requests.forEach(getTeachers);
   globalRequests.push(requests);
-  // requests.forEach(request => console.log('*********', request.availableTeachers));
-  // globalRequests[0].forEach(calculateAvailability);
 }
 
 async function getTeachersForTwo(requests) {
@@ -64,7 +62,8 @@ function fetchDriveTime(lesson, schedule) {
   }
 
   return new Promise((resolve, reject)=> {
-    fetchDelay = fetchDelay + 150;
+    //delays fetch so it does not trigger overQueryLimit Error
+    fetchDelay = fetchDelay + 200;
     setTimeout(()=> {
       directionsService.route(request, (result, status) => {
         if (status == 'OK') {
@@ -101,11 +100,45 @@ async function getLessons(schedule) {
     console.log(`Lesson ${lesson.id} ends at `,lesson.endMoment.format('LL LT'));
   });
   console.log('LESSONS', lessons)
+  for(let i = 0 ; i < lessons.length ; i++) {
+    //if a lesson is sandwiched in between a previous lesson / schedule.start time and next lesson / schedule.endTime it is not openEnded. Therefore it is not worth fetch a drive time, because there is no time for a lesson in between
+
+    let thisLesson = lessons[i];
+    let nextLesson = lessons[i+1];
+    let prevLesson = lessons[i-1];
+    thisLesson.openEnded = true;
+
+    //if there is no previous lesson, substitute the schedule start time
+    if(!prevLesson) {
+      prevLesson = {};
+      prevLesson.endMoment = schedule.startTime
+    }
+
+    //if there is no next lesson, substitute the schedule.endTime
+    if(!nextLesson) {
+      nextLesson = {};
+      nextLesson.startMoment = schedule.endTime
+    }
+
+    //if next lesson starts 30 minutes or less after this lesson ends and previous lesson ended 30 minutes or less before this lesson starts
+    if((nextLesson.startMoment.valueOf() - thisLesson.endMoment.valueOf() < 1800000) && (thisLesson.startMoment.valueOf() - prevLesson.endMoment.valueOf() < 1800000)) {
+      thisLesson.openEnded = false
+    }
+  }
+
+  //filter out 'landlocked' lessons so that their drivetime is not calculated
+  lessons = lessons.filter(lesson => lesson.openEnded)
+
   let promises = lessons.map(lesson => {
     return fetchDriveTime(lesson, schedule);
   })
+
   console.log('PROMISES', promises);
+
+  //attaches lessons to the schedule object
   schedule.lessons = lessons;
+
+  //once all the relevant drive times are fetched...
   let resolved = await Promise.all(promises);
   console.log('RESOLVED:::', resolved);
   for(let i = 0 ; i < lessons.length ; i++) {
