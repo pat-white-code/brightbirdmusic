@@ -17,17 +17,6 @@ async function getRequests(){
   // globalRequests[0].forEach(calculateAvailability);
 }
 
-// async function calculateAvailability (request) {
-
-//   request.availableTeachers.forEach(teacher => {
-//     teacher.schedules.forEach(schedule => {
-//       schedule.lessons.forEach((lesson, index) => {
-//         console.log(request.lesson_duration, request.instrument_id, index, index+1, lesson.startMoment, lesson.endMoment)
-//       })
-//     })
-//   })
-// };
-
 async function getTeachersForTwo(requests) {
   let response = await fetch(`http://127.0.0.1:4001/api/teachers/two?instId=${requests[0].instrument_id}&zipCode=${requests[0].zip_code}&studentAge=${requests[0].student_age}&instId2=${requests[1].instrument_id}&studentAge2=${requests[1].student_age}`);
   let teachers = await response.json();
@@ -139,13 +128,6 @@ async function getLessons(schedule) {
         schedule.availabilities.push(availabilityBefore)
       }
     }
-  }
-}
-
-async function filterConflicts(lessonsArr, schedule){
-  
-  for(let i = 0; i < lessonsArr.lengh ; i++) {
-
   }
 }
 
