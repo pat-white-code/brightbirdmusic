@@ -55,30 +55,34 @@ async function getSchedule(teacher) {
   teacher.schedule.forEach(getLessons);
 }
 
-async function fetchDriveTime(lesson, schedule) {
+function fetchDriveTime(lesson, schedule) {
   let request = {
     origin: lesson.address,
     destination: schedule.requestedAddress,
     travelMode: 'DRIVING',
   }
-  await directionsService.route(request, (result, status) => {
-    if (status == 'OK') {
-      console.log(result)
-      lesson.driveTime = Math.ceil(result.routes[0].legs[0].duration.value / 60);
-    }
-    lesson.availabilityAfter = {
-      lesson_duration: schedule.requestedTime,
-      startMoment: lesson.endMoment.clone().add(lesson.driveTime, 'minutes')  
-    }
-    lesson.availabilityAfter.endMoment = lesson.availabilityAfter.startMoment.clone().add(schedule.requestedTime, 'minutes');
-    lesson.availabilityAfter.description = lesson.availabilityAfter.startMoment.format('LL LT');
 
-    lesson.availabilityBefore = {
-      lesson_duration: schedule.requestedTime,
-      startMoment: lesson.startMoment.clone().subtract(lesson.driveTime, 'minutes').subtract(schedule.requestedTime, 'minutes')
-    }
-    lesson.availabilityBefore.description = lesson.availabilityBefore.startMoment.format('LL LT');
-  });
+  return new Promise((resolve, reject)=> {
+    directionsService.route(request, (result, status) => {
+      if (status == 'OK') {
+        console.log(result)
+        lesson.driveTime = Math.ceil(result.routes[0].legs[0].duration.value / 60);
+      }
+      lesson.availabilityAfter = {
+        lesson_duration: schedule.requestedTime,
+        startMoment: lesson.endMoment.clone().add(lesson.driveTime, 'minutes')  
+      }
+      lesson.availabilityAfter.endMoment = lesson.availabilityAfter.startMoment.clone().add(schedule.requestedTime, 'minutes');
+      lesson.availabilityAfter.description = lesson.availabilityAfter.startMoment.format('LL LT');
+  
+      lesson.availabilityBefore = {
+        lesson_duration: schedule.requestedTime,
+        startMoment: lesson.startMoment.clone().subtract(lesson.driveTime, 'minutes').subtract(schedule.requestedTime, 'minutes')
+      }
+      lesson.availabilityBefore.description = lesson.availabilityBefore.startMoment.format('LL LT');
+      resolve(lesson)
+    });
+  })
 }
 
 async function getLessons(schedule) {
@@ -92,11 +96,14 @@ async function getLessons(schedule) {
     lesson.endMoment = lesson.startMoment.clone().add(lesson.duration, 'minutes');
     console.log(`Lesson ${lesson.id} ends at `,lesson.endMoment.format('LL LT'));
   });
+  console.log('LESSONS', lessons)
   let promises = lessons.map(lesson => {
-    fetchDriveTime(lesson, schedule);
+    return fetchDriveTime(lesson, schedule);
   })
+  console.log('PROMISES', promises);
   schedule.lessons = lessons;
   let resolved = await Promise.all(promises);
+  console.log('RESOLVED:::', resolved);
   for(let i = 0 ; i < lessons.length ; i++) {
     let thisLesson = lessons[i];
     let nextLesson = lessons[i+1];
