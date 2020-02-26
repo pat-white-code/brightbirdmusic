@@ -3,7 +3,8 @@ const clientId = 1;
 let globalTeachers = [];
 let globalClient = {};
 let globalRequests = [];
-var directionsService = new google.maps.DirectionsService()
+var directionsService = new google.maps.DirectionsService();
+let fetchDelay = 0;
 
 async function getRequests(){
   let response = await fetch(`http://127.0.0.1:4001/api/subscriptions/requests/client/${clientId}`);
@@ -63,25 +64,28 @@ function fetchDriveTime(lesson, schedule) {
   }
 
   return new Promise((resolve, reject)=> {
-    directionsService.route(request, (result, status) => {
-      if (status == 'OK') {
-        console.log(result)
-        lesson.driveTime = Math.ceil(result.routes[0].legs[0].duration.value / 60);
-      }
-      lesson.availabilityAfter = {
-        lesson_duration: schedule.requestedTime,
-        startMoment: lesson.endMoment.clone().add(lesson.driveTime, 'minutes')  
-      }
-      lesson.availabilityAfter.endMoment = lesson.availabilityAfter.startMoment.clone().add(schedule.requestedTime, 'minutes');
-      lesson.availabilityAfter.description = lesson.availabilityAfter.startMoment.format('LL LT');
-  
-      lesson.availabilityBefore = {
-        lesson_duration: schedule.requestedTime,
-        startMoment: lesson.startMoment.clone().subtract(lesson.driveTime, 'minutes').subtract(schedule.requestedTime, 'minutes')
-      }
-      lesson.availabilityBefore.description = lesson.availabilityBefore.startMoment.format('LL LT');
-      resolve(lesson)
-    });
+    fetchDelay = fetchDelay + 150;
+    setTimeout(()=> {
+      directionsService.route(request, (result, status) => {
+        if (status == 'OK') {
+          console.log(result)
+          lesson.driveTime = Math.ceil(result.routes[0].legs[0].duration.value / 60);
+        }
+        lesson.availabilityAfter = {
+          lesson_duration: schedule.requestedTime,
+          startMoment: lesson.endMoment.clone().add(lesson.driveTime, 'minutes')  
+        }
+        lesson.availabilityAfter.endMoment = lesson.availabilityAfter.startMoment.clone().add(schedule.requestedTime, 'minutes');
+        lesson.availabilityAfter.description = lesson.availabilityAfter.startMoment.format('LL LT');
+    
+        lesson.availabilityBefore = {
+          lesson_duration: schedule.requestedTime,
+          startMoment: lesson.startMoment.clone().subtract(lesson.driveTime, 'minutes').subtract(schedule.requestedTime, 'minutes')
+        }
+        lesson.availabilityBefore.description = lesson.availabilityBefore.startMoment.format('LL LT');
+        resolve(lesson)
+      });
+    }, fetchDelay)
   })
 }
 
@@ -124,15 +128,15 @@ async function getLessons(schedule) {
 
     if(prevLesson) {
       //if i have a lesson that ends at 3:00 PM but is 20 minutes away, it will conflict
-      if(availabilityBefore.startMoment.clone().subtract(prevLesson.driveTime, 'minutes').valueOf() > prevLesson.endMoment.valueOf()){
-        schedule.availabilities.push(availabilityBefore)
+      if(thisLesson.availabilityBefore.startMoment.clone().subtract(prevLesson.driveTime, 'minutes').valueOf() > prevLesson.endMoment.valueOf()){
+        schedule.availabilities.push(thisLesson.availabilityBefore)
       }
     }
 
     if(!prevLesson) {
       //if there is no previous lesson, and if availabilityBefore is not before the teacher's start time
-      if(availabilityBefore.startMoment.valueOf() > schedule.startTime.valueOf()) {
-        schedule.availabilities.push(availabilityBefore)
+      if(thisLesson.availabilityBefore.startMoment.valueOf() > schedule.startTime.valueOf()) {
+        schedule.availabilities.push(thisLesson.availabilityBefore)
       }
     }
   }
