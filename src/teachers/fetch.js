@@ -55,37 +55,79 @@ async function getSchedule(teacher) {
 }
 
 function fetchDriveTime(lesson, schedule) {
-  let request = {
-    origin: lesson.address,
-    destination: schedule.requestedAddress,
-    travelMode: 'DRIVING',
-  }
+  let origin = lesson.address.replace(/\d+ /, "");
+  origin = origin.replace(/ /g, "+");
+  let destination = schedule.requestedAddress.replace(/\d+ /, "");
+  destination = destination.replace(/ /g, "+");
+  console.log('ORIGIN', origin);
+  console.log('DESTINATION', destination);
+  if(origin == destination) {return new Promise((resolve,reject)=> {
+    lesson.driveTime = 0;
+    lesson.availabilityAfter = {
+      lesson_duration: schedule.requestedTime,
+      startMoment: lesson.endMoment.clone().add(lesson.driveTime, 'minutes')  
+      }
+    lesson.availabilityAfter.endMoment = lesson.availabilityAfter.startMoment.clone().add(schedule.requestedTime, 'minutes');
+    lesson.availabilityAfter.description = lesson.availabilityAfter.startMoment.format('LL LT');
 
-  return new Promise((resolve, reject)=> {
-    //delays fetch so it does not trigger overQueryLimit Error
-    fetchDelay = fetchDelay + 200;
-    setTimeout(()=> {
-      directionsService.route(request, (result, status) => {
-        if (status == 'OK') {
-          console.log(result)
-          lesson.driveTime = Math.ceil(result.routes[0].legs[0].duration.value / 60);
+    lesson.availabilityBefore = {
+      lesson_duration: schedule.requestedTime,
+      startMoment: lesson.startMoment.clone().subtract(lesson.driveTime, 'minutes').subtract(schedule.requestedTime, 'minutes')
+    }
+    lesson.availabilityBefore.description = lesson.availabilityBefore.startMoment.format('LL LT');
+    resolve(lesson)
+  })}
+  return fetch(`http://127.0.0.1:4001/api/driveTimes?origin=${origin}&destination=${destination}`)
+    .then(res=> res.json())
+    .then(json => {
+      lesson.driveTime = Math.ceil(json[0].drive_time_seconds / 60)
+      lesson.availabilityAfter = {
+        lesson_duration: schedule.requestedTime,
+        startMoment: lesson.endMoment.clone().add(lesson.driveTime, 'minutes')  
         }
-        lesson.availabilityAfter = {
-          lesson_duration: schedule.requestedTime,
-          startMoment: lesson.endMoment.clone().add(lesson.driveTime, 'minutes')  
-        }
-        lesson.availabilityAfter.endMoment = lesson.availabilityAfter.startMoment.clone().add(schedule.requestedTime, 'minutes');
-        lesson.availabilityAfter.description = lesson.availabilityAfter.startMoment.format('LL LT');
+      lesson.availabilityAfter.endMoment = lesson.availabilityAfter.startMoment.clone().add(schedule.requestedTime, 'minutes');
+      lesson.availabilityAfter.description = lesson.availabilityAfter.startMoment.format('LL LT');
+  
+      lesson.availabilityBefore = {
+        lesson_duration: schedule.requestedTime,
+        startMoment: lesson.startMoment.clone().subtract(lesson.driveTime, 'minutes').subtract(schedule.requestedTime, 'minutes')
+      }
+      lesson.availabilityBefore.description = lesson.availabilityBefore.startMoment.format('LL LT');
+    })
+
+  // let request = {
+  //   origin: lesson.address,
+  //   destination: schedule.requestedAddress,
+  //   travelMode: 'DRIVING',
+  // }
+
+  // return new Promise((resolve, reject)=> {
     
-        lesson.availabilityBefore = {
-          lesson_duration: schedule.requestedTime,
-          startMoment: lesson.startMoment.clone().subtract(lesson.driveTime, 'minutes').subtract(schedule.requestedTime, 'minutes')
-        }
-        lesson.availabilityBefore.description = lesson.availabilityBefore.startMoment.format('LL LT');
-        resolve(lesson)
-      });
-    }, fetchDelay)
-  })
+    //delays fetch so it does not trigger overQueryLimit Error
+    
+    // fetchDelay = fetchDelay + 200;
+    // setTimeout(()=> {
+    //   directionsService.route(request, (result, status) => {
+    //     if (status == 'OK') {
+    //       console.log(result)
+    //       lesson.driveTime = Math.ceil(result.routes[0].legs[0].duration.value / 60);
+    //     }
+    //     lesson.availabilityAfter = {
+    //       lesson_duration: schedule.requestedTime,
+    //       startMoment: lesson.endMoment.clone().add(lesson.driveTime, 'minutes')  
+    //     }
+    //     lesson.availabilityAfter.endMoment = lesson.availabilityAfter.startMoment.clone().add(schedule.requestedTime, 'minutes');
+    //     lesson.availabilityAfter.description = lesson.availabilityAfter.startMoment.format('LL LT');
+    
+    //     lesson.availabilityBefore = {
+    //       lesson_duration: schedule.requestedTime,
+    //       startMoment: lesson.startMoment.clone().subtract(lesson.driveTime, 'minutes').subtract(schedule.requestedTime, 'minutes')
+    //     }
+    //     lesson.availabilityBefore.description = lesson.availabilityBefore.startMoment.format('LL LT');
+    //     resolve(lesson)
+    //   });
+    // }, fetchDelay)
+  // })
 }
 
 async function getLessons(schedule) {
