@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const bodyParser = require('body-parser');
 const cors = require('cors');
 const port = process.env.port || 4001;
 const teachersRouter = require('./routes/teachers');
@@ -13,6 +14,8 @@ app.get('/api', (req, res) => {
 })
 
 app.use(cors());
+app.use(bodyParser.json());
+
 app.use('/api/teachers', teachersRouter);
 app.use('/api/schedules', schedulesRouter);
 app.use('/api/students', studentsRouter);
