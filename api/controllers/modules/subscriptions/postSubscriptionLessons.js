@@ -2,7 +2,7 @@ const mysql = require('mysql');
 const pool = require('../../../mysql/connection');
 const moment = require('moment');
 
-const postSubscriptionLessons = (req, res) => {
+const postSubscriptionLessons = (req, res, next) => {
   console.log('LESSONS REQUEST OBJECT', req.body);
   let dayTime = moment(req.body.dayTime, 'YYYY-MM-DD HH:mm:ss');
   let endTime = dayTime.clone().add(req.body.duration, 'minutes').format('HH:mm:ss');
@@ -19,7 +19,8 @@ const postSubscriptionLessons = (req, res) => {
   sql = mysql.format(sql, replacements);
   pool.query(sql, (err, rows)=> {
     if(err){return res.status(500).send(err)}
-    return res.status(201).send('Lesson Created');
+    console.log('lesson created')
+    next()
   })
 }
 
