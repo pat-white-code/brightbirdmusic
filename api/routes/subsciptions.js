@@ -5,6 +5,6 @@ const controller = require('../controllers/subscriptions');
 router.get('/client/:client_id', controller.getClientSubscriptions);
 router.get('/requests/client/:clientId', controller.getClientRequests);
 
-router.post('/', controller.postSubscription);
+router.post('/', controller.postSubscription, controller.postSubscriptionLessons);
 
 module.exports = router;

@@ -2,9 +2,10 @@ const mysql = require('mysql');
 const pool = require('../../../mysql/connection');
 const moment = require('moment');
 
-const postSubscription = (req, res) => {
+const postSubscription = (req, res, next) => {
 
   console.log('REQQQQQ BODY',req.body)
+  req.body.HARDCODED = 'HARDCODED';
 
   let timeCreated = moment().format('YYYY-MM-DD HH:mm:ss');
 
@@ -18,24 +19,15 @@ const postSubscription = (req, res) => {
   let replacements = [req.body.studentId, req.body.teacherId, req.body.dayId, req.body.time_, req.body.startDate, req.body.instrumentId, req.body.price, req.body.duration, req.body.address_id, timeCreated];
 
   sql = mysql.format(sql, replacements);
-  pool.query(sql, (err, rows)=>{
-    if(err) {return res.status(500).send(err)}
-    return res.status(201).send('resource created')
-  })
-
-  // let sql2 = `
-  //   SELECT id FROM subscriptions
-  //   where time_created = ?
-  //   LIMIT 1;
-  // `
-  // let replacements2 = [timeCreated];
-  // sql2 = mysql.format(sql2, replacements2);
-  // pool.query(sql2, (err, rows)=> {
-  //   if(err){return res.status(500).send(err)}
-  //   return res.json(rows[0].id)
-  //   // req.body.subscriptionId = rows[0].id
-  // })
-  // next();
+  new Promise((resolve, reject)=> {
+    pool.query(sql, (err, results)=>{
+      if(err) {return res.status(500).send(err)}
+      req.body.subscriptionId = results.insertId
+      resolve(results)
+    })
+  }).then(()=>{
+    next();
+  });
 }
 
 module.exports = postSubscription;
@@ -74,3 +66,17 @@ module.exports = postSubscription;
 // )
 // VALUES
 //   (1, '2020-03-02 03:00:00', '2020-03-02 07:00:00');
+
+
+// let sql2 = `
+  //   SELECT id FROM subscriptions
+  //   ORDER BY time_created DESC
+  //   LIMIT 1;
+  // `
+  // // let replacements2 = [timeCreated];
+  // // sql2 = mysql.format(sql2, replacements2);
+  // pool.query(sql2, (err, rows)=> {
+  //   if(err){return res.status(500).send(err)}
+  //   return res.json(rows);
+  //   // req.body.subscriptionId = rows[0].id
+  // })
