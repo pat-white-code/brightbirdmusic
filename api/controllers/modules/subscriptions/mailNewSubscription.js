@@ -1,13 +1,25 @@
 // given a request object, send an email with all the relevant information about the new subscription
 
 const nodemailer = require('nodemailer');
+const fetch = require('node-fetch');
+const cors = require('cors');
+
 
 const mailNewSubscription = (req, res) => {
-  let output = `
+  
+  async function main() {
+    
+    let subscriptionId = req.body.subscriptionId
+    let response = await fetch(`http://127.0.0.1:4001/api/subscriptions/${subscriptionId}`);
+    let json = await response.json();
+    let sub = json[0];
+    let studentName = `${sub.student_first_name} ${sub.student_last_name}`;
+
+    let output = `
   <p>You have a new subscription</p>
   <h3>Student Details</h3>
   <ul>
-    <li><b>Student ID : </b>${req.body.studentId}</li>
+    <li><b>Student ID : </b>${studentName}</li>
     <li><b>Student Address : </b>${req.body.address_id}</li>
     <li><b>Start Date : </b>${req.body.startDate}</li>
     <li><b>Lesson Time : </b>${req.body.time_} </li>
@@ -16,8 +28,6 @@ const mailNewSubscription = (req, res) => {
   </ul>
   `;
 
-
-  async function main() {
     // Generate test SMTP service account from ethereal.email
     // Only needed if you don't have a real mail account for testing
     // let testAccount = await nodemailer.createTestAccount();
