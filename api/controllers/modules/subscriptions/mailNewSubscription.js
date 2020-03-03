@@ -79,7 +79,7 @@ const mailNewSubscription = (req, res) => {
     // send mail with defined transport object
     let info = await transporter.sendMail({
       from: "Emmy Corkery <emmy25@ethereal.email>", // sender address
-      to: "bar@example.com, baz@example.com", // list of receivers
+      to: "bar@example.com, baz@example.com, info@westlakelessons.com", // list of receivers
       subject: "New Subscription Received", // Subject line
       text: "Subscription info", // plain text body
       html: output // html body
