@@ -1,11 +1,9 @@
-// TODO: THIS HAS BEEN UPDATED AND SENT TO REQUESTS CONTROLLER!!!
-
 const mysql = require('mysql');
 const pool = require('../../../mysql/connection');
 
 const getClientRequests = (req, res) => {
   let sql = `
-    SELECT students.first_name, students.last_name, instruments.id AS instrument_id, instruments.instrument_name, service_requests.lesson_duration, service_requests.zip_code, service_requests.student_age, addresses.address
+    SELECT students.first_name, students.last_name, instruments.id AS instrument_id, instruments.instrument_name, service_requests.lesson_duration, addresses.zip_code, students.dob, addresses.address, addresses.street
     FROM clients
     JOIN students
       ON students.client_id = clients.id
