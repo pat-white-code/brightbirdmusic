@@ -3,6 +3,7 @@
 const nodemailer = require('nodemailer');
 const fetch = require('node-fetch');
 const cors = require('cors');
+const moment = require('moment');
 
 
 const mailNewSubscription = (req, res) => {
@@ -14,18 +15,48 @@ const mailNewSubscription = (req, res) => {
     let json = await response.json();
     let sub = json[0];
     let studentName = `${sub.student_first_name} ${sub.student_last_name}`;
+    let instrumentName = sub.instrument_name;
+    let address = sub.address;
+    let teacherName = `${sub.teacher_first_name} ${sub.teacher_last_name}`
+    let teacherEmail = sub.teacher_email;
+    let teacherPhone = sub.teacher_phone;
+    let parentName = `${sub.parent_first_name} ${sub.parent_last_name}`;
+    let parentEmail = sub.parent_email;
+    let parentPhone = sub.parent_phone;
+    let lessonDuration = sub.lesson_duration;
+    let price = sub.lesson_price;
+    let startTime = moment(`${sub.start_date} ${sub.time_}`, 'YYYY-MM-DD HH-mm-ss');
+    let endTime = startTime.clone().add(lessonDuration, 'minutes');
+    let startDateText = startTime.format('LL');
+    let lessonDay = sub.day_of_week;
+    let startTimeText = startTime.format('h:mm A');
+    let endTimeText = endTime.format('h:mm A');
+    let age = Math.abs(moment(sub.dob).diff(moment(), 'years'));
+
 
     let output = `
   <p>You have a new subscription</p>
-  <h3>Student Details</h3>
+  <h3>Lesson Details</h3>
   <ul>
-    <li><b>Student ID : </b>${studentName}</li>
-    <li><b>Student Address : </b>${req.body.address_id}</li>
-    <li><b>Start Date : </b>${req.body.startDate}</li>
-    <li><b>Lesson Time : </b>${req.body.time_} </li>
-    <li><b>Lesson Duration : </b>${req.body.duration} minutes </li>
-    <li><b>Instrument ID : </b>${req.body.instrumentId}</li>
+    <li><b>Student: </b>${studentName} (${age}) - ${lessonDuration}-min ${instrumentName}</li>
+    <li><b>Subscription: </b>${lessonDay}s at ${startTimeText} - ${endTimeText}, starting ${startDateText}</li>
+    <li><b>Price: </b>$${price} / Lesson</li>
+    <li><b>Address: </b>${address}</li>
   </ul>
+  <h3>Parent/Client Information</h3>
+  <ul>
+    <li><b>Name: </b>${parentName}</li>
+    <li><b>Email: </b>${parentEmail}</li>
+    <li><b>Phone: </b>${parentPhone}</li>
+  </ul>
+  <h3>Teacher Information</h3>
+  <ul>
+    <li><b>Name: </b>${teacherName}</li>
+    <li><b>Email: </b>${teacherEmail}</li>
+    <li><b>Phone: </b>${teacherPhone}</li>
+  </ul>
+
+  <p>We hope you have a great experience with BrightBird Muisc!</p>
   `;
 
     // Generate test SMTP service account from ethereal.email
