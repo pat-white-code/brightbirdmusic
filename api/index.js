@@ -8,6 +8,7 @@ const schedulesRouter = require('./routes/schedules');
 const studentsRouter = require('./routes/students');
 const subscriptionsRouter = require('./routes/subsciptions');
 const driveTimesRouter = require('./routes/driveTimes');
+const requestsRouter = require('./routes/requests');
 
 app.get('/api', (req, res) => {
   res.send('Welcome to our server!')
@@ -21,6 +22,7 @@ app.use('/api/schedules', schedulesRouter);
 app.use('/api/students', studentsRouter);
 app.use('/api/subscriptions', subscriptionsRouter);
 app.use('/api/driveTimes', driveTimesRouter);
+app.use('/api/requests', requestsRouter);
 
 
 app.listen(port, ()=> {
