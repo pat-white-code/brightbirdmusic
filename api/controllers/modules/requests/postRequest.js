@@ -1,7 +1,7 @@
 const mysql = require('mysql');
 const pool = require('../../../mysql/connection');
 
-const postRequest = (req, res) => {
+const postRequest = (req, res, next) => {
   // student_id is fetched from client_id and embedded in form
   // instrument_id and lesson_duration are user inputs
   let sql = `
@@ -15,7 +15,9 @@ const postRequest = (req, res) => {
   sql = mysql.format(sql, replacements);
   pool.query(sql, (err, results)=> {
     if (err){return res.status(500).send(err)}
-    res.status(201).send(`request created with id ${results.insertId}`);
+    req.body.requestId = results.insertId;
+    next();
+    // res.status(201).send(`request created with id ${results.insertId}`);
   })
 }
 

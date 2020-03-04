@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const path = require('path');
 const port = process.env.port || 4001;
 const teachersRouter = require('./routes/teachers');
 const schedulesRouter = require('./routes/schedules');
@@ -10,9 +11,12 @@ const subscriptionsRouter = require('./routes/subsciptions');
 const driveTimesRouter = require('./routes/driveTimes');
 const requestsRouter = require('./routes/requests');
 
-app.get('/api', (req, res) => {
-  res.send('Welcome to our server!')
-})
+// const exphbs = require('express-handlebars');
+// app.engine('handlebars', exphbs());
+// app.set('view engine', 'handlebars');
+// app.use('/public', express.static(path.join(__dirname, 'public')));
+
+
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -23,7 +27,6 @@ app.use('/api/students', studentsRouter);
 app.use('/api/subscriptions', subscriptionsRouter);
 app.use('/api/driveTimes', driveTimesRouter);
 app.use('/api/requests', requestsRouter);
-
 
 app.listen(port, ()=> {
   console.log(`Listening on ${port}!`)
