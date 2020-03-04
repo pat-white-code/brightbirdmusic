@@ -4,6 +4,8 @@ const postSubscription = require('./modules/subscriptions/postSubscription');
 const postSubscriptionLessons = require('./modules/subscriptions/postSubscriptionLessons');
 const mailNewSubscription = require('./modules/subscriptions/mailNewSubscription');
 const getSubscriptionInfo = require('./modules/subscriptions/getSubscriptionInfo');
+const getTeacherSubscriptions = require('./modules/subscriptions/getTeacherSubscriptions');
+const putSubscription = require('./modules/subscriptions/putSubscription');
 
 
 module.exports = {
@@ -12,5 +14,7 @@ module.exports = {
   postSubscription,
   postSubscriptionLessons,
   mailNewSubscription,
-  getSubscriptionInfo
+  getSubscriptionInfo,
+  getTeacherSubscriptions,
+  putSubscription
 }
