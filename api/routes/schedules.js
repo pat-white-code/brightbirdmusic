@@ -4,6 +4,8 @@ const controller = require('../controllers/schedules');
 
 router.get('/:teacher_id', controller.getTeacherSchedule);
 router.get('/lessons/:schedule_id', controller.getLessonsByScheduleId);
+router.get('/recurring/:teacherId', controller.getRecurringSchedules);
+
 
 router.post('/recurring/:teacherId', controller.postRecurringSchedule, controller.postSchedules);
 
