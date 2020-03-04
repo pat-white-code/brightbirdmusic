@@ -19,18 +19,53 @@ const postSubscription = (req, res, next) => {
   let replacements = [req.body.studentId, req.body.teacherId, req.body.dayId, req.body.time_, req.body.startDate, req.body.instrumentId, req.body.price, req.body.duration, req.body.address_id, timeCreated];
 
   sql = mysql.format(sql, replacements);
-  new Promise((resolve, reject)=> {
-    pool.query(sql, (err, results)=>{
-      if(err) {return res.status(500).send(err)}
-      req.body.subscriptionId = results.insertId
-      resolve(results)
-    })
-  }).then(()=>{
+  pool.query(sql, (err, results)=> {
+    if(err) {return res.status(500).send(err)}
+    req.body.subscriptionId = results.insertId;
     next();
-  });
+  })
 }
 
 module.exports = postSubscription;
+
+
+
+
+
+
+// const mysql = require('mysql');
+// const pool = require('../../../mysql/connection');
+// const moment = require('moment');
+
+// const postSubscription = (req, res, next) => {
+
+//   console.log('REQQQQQ BODY',req.body)
+//   req.body.HARDCODED = 'HARDCODED';
+
+//   let timeCreated = moment().format('YYYY-MM-DD HH:mm:ss');
+
+//   let sql = `
+//   INSERT INTO subscriptions (
+//     student_id, teacher_id, day_id, time_, start_date, instrument_id, lesson_price, lesson_duration, address_id, time_created
+//   )
+//   VALUES 
+//     (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+//   `
+//   let replacements = [req.body.studentId, req.body.teacherId, req.body.dayId, req.body.time_, req.body.startDate, req.body.instrumentId, req.body.price, req.body.duration, req.body.address_id, timeCreated];
+
+//   sql = mysql.format(sql, replacements);
+//   new Promise((resolve, reject)=> {
+//     pool.query(sql, (err, results)=>{
+//       if(err) {return res.status(500).send(err)}
+//       req.body.subscriptionId = results.insertId
+//       resolve(results)
+//     })
+//   }).then(()=>{
+//     next();
+//   });
+// }
+
+// module.exports = postSubscription;
 
 // Given a student picking a lesson with a teacher, create a subscription
 

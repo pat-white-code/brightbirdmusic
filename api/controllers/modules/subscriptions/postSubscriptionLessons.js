@@ -32,7 +32,7 @@ const postSubscriptionLessons = (req, res, next) => {
   sql = mysql.format(sql, replacements);
   pool.query(sql, (err, rows)=> {
     if(err){return res.status(500).send(err)}
-    console.log('lesson created')
+    console.log(`lessons for subscription ID: ${req.body.subscriptionId} created`)
     next()
   })
 }
