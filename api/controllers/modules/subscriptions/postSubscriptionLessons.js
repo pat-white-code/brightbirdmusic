@@ -12,10 +12,23 @@ const postSubscriptionLessons = (req, res, next) => {
     day_time, duration, student_id, teacher_id, inst_id, subscription_id, price, tandem, date_, start_time, end_time
     )
   VALUES 
-  ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? );`;
+
+  ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ) `;
 
   let replacements = [req.body.dayTime, req.body.duration, req.body.studentId, req.body.teacherId, req.body.instrumentId, req.body.subscriptionId, req.body.price, 0, req.body.startDate, req.body.time_, endTime];
 
+  let i = 0;
+  while (i < 5) {
+    dayTime = dayTime.clone().add(1, 'week');
+    endTime = dayTime.clone().add(req.body.duration, 'minutes').format('HH:mm:ss');
+    let startTime = dayTime.format('HH:mm:ss');
+    let date = dayTime.format('YYYY-MM-DD');
+    sql = sql.concat(', (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+    replacements.push(dayTime.format('YYYY-MM-DD HH:mm:ss'), req.body.duration, req.body.studentId, req.body.teacherId, req.body.instrumentId, req.body.subscriptionId, req.body.price, 0, date, startTime, endTime);
+    i = i + 1;
+  } 
+
+  sql = sql.concat(';')
   sql = mysql.format(sql, replacements);
   pool.query(sql, (err, rows)=> {
     if(err){return res.status(500).send(err)}
