@@ -17,6 +17,20 @@ router.put('/:subscriptionId', controller.putSubscription);
   // update the subscription
   // delete all lessons after original date
   // create new lessons starting after startDate
-router.put('/lesson/:lessonId/:subscriptionId', controller.putLesson, controller.putSubscription, controller.deleteLessons, controller.postSubscriptionLessons, controller.mailNewSubscription);
+router.put('/lesson/:lessonId/:subscriptionId', 
+  controller.putLesson, 
+  // edits a single lesson
+
+  controller.putSubscription, 
+  // changes the subscription
+
+  controller.deleteLessons, 
+  // deletes the old lessons
+
+  controller.postSubscriptionLessons, 
+  // posts new lessons at the new subscription
+
+  controller.mailNewSubscription);
+  // mailes new subscription information
 
 module.exports = router;
