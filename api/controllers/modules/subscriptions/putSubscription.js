@@ -2,7 +2,7 @@ const mysql = require('mysql');
 const pool = require('../../../mysql/connection');
 const moment = require('moment');
 
-const putSubscription = (req, res) => {
+const putSubscription = (req, res, next) => {
   let dayId = moment(req.body.date, 'YYYY-MM-DD').format('E');
 
 
@@ -27,7 +27,10 @@ const putSubscription = (req, res) => {
   sql = mysql.format(sql, replacements);
   pool.query(sql, (err, rows)=> {
     if(err) {return res.status(500).send(err)}
-    return res.status(200).send(`subscription ${req.params.subscriptionId} updated`)
+    // return res.status(200).send(`subscription ${req.params.subscriptionId} updated`)
+    console.log(`subscription ${req.params.subscriptionId} updated`)
+    req.body.dayId = dayId;
+    next()
   })
 }
 

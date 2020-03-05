@@ -34,7 +34,9 @@ const putLesson = (req, res, next) => {
   sql = mysql.format(sql, replacements);
   pool.query(sql, (err, results)=> {
     if(err){return res.status(500).send(err)}
+    req.body.subscriptionId = req.params.subscriptionId;
     req.body.price = price;
+    req.body.dayTime = dayTime.format('YYYY-MM-DD HH:mm:ss');
     console.log(`lesson ID ${req.params.lessonId} has been updated.`);
     next()
   })
