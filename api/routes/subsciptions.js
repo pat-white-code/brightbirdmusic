@@ -12,6 +12,11 @@ router.post('/', controller.postSubscription, controller.postSubscriptionLessons
 router.post('/send', controller.mailNewSubscription);
 
 router.put('/:subscriptionId', controller.putSubscription);
-router.put('/lesson/:lessonId', controller.putLesson);
+// UPDATE LESSON
+// IF updateSubscription === TRUE, 
+  // update the subscription
+  // delete all lessons after original date
+  // create new lessons starting after startDate
+router.put('/lesson/:lessonId/:subscriptionId', controller.putLesson, controller.putSubscription);
 
 module.exports = router;

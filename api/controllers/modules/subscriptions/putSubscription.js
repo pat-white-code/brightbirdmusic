@@ -1,25 +1,26 @@
 const mysql = require('mysql');
 const pool = require('../../../mysql/connection');
+const moment = require('moment');
 
 const putSubscription = (req, res) => {
+  let dayId = moment(req.body.date, 'YYYY-MM-DD').format('E');
+
 
   let sql = `
     UPDATE subscriptions
     SET day_id = ?,
       time_ = ?,
       start_date = ?,
-      instrument_id = ?,
       lesson_price = ?,
       lesson_duration = ?
     WHERE id = ?;
   `
   let replacements = [
-    req.body.dayId,
-    req.body.time,
-    req.body.startDate,
-    req.body.instrumentId,
-    req.body.lessonPrice,
-    req.body.lessonDuration,
+    dayId,
+    req.body.startTime,
+    req.body.date,
+    req.body.price,
+    req.body.duration,
     req.params.subscriptionId
   ];
 

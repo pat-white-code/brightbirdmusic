@@ -13,7 +13,6 @@ const putLesson = (req, res, next) => {
   //DERIVED:
   let dayTime = moment(date+startTime, 'YYYY-MM-DD HH:mm:ss');
   let endTime = dayTime.clone().add(duration, 'minutes').format('HH:mm:ss');
-  let originalDate = req.body.originalDate;
   let id = req.params.lessonId;
   let price;
   if(duration == 30) {price = 40} else if(duration == 45) {price = 56} else if(duration == 60) {price = 72};
@@ -35,8 +34,9 @@ const putLesson = (req, res, next) => {
   sql = mysql.format(sql, replacements);
   pool.query(sql, (err, results)=> {
     if(err){return res.status(500).send(err)}
-    res.status(200).send(`lesson ID ${req.params.lessonId} has been updated.`)
-    // next()
+    req.body.price = price;
+    console.log(`lesson ID ${req.params.lessonId} has been updated.`);
+    next()
   })
 }
 
