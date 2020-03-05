@@ -12,5 +12,6 @@ router.post('/', controller.postSubscription, controller.postSubscriptionLessons
 router.post('/send', controller.mailNewSubscription);
 
 router.put('/:subscriptionId', controller.putSubscription);
+router.put('/lesson/:lessonId', controller.putLesson);
 
 module.exports = router;

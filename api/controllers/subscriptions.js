@@ -6,6 +6,7 @@ const mailNewSubscription = require('./modules/subscriptions/mailNewSubscription
 const getSubscriptionInfo = require('./modules/subscriptions/getSubscriptionInfo');
 const getTeacherSubscriptions = require('./modules/subscriptions/getTeacherSubscriptions');
 const putSubscription = require('./modules/subscriptions/putSubscription');
+const putLesson = require('./modules/subscriptions/putLesson');
 
 
 module.exports = {
@@ -16,5 +17,6 @@ module.exports = {
   mailNewSubscription,
   getSubscriptionInfo,
   getTeacherSubscriptions,
-  putSubscription
+  putSubscription,
+  putLesson
 }
