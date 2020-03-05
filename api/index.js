@@ -10,6 +10,7 @@ const studentsRouter = require('./routes/students');
 const subscriptionsRouter = require('./routes/subsciptions');
 const driveTimesRouter = require('./routes/driveTimes');
 const requestsRouter = require('./routes/requests');
+const lessonsRouter = require('./routes/lessons');
 
 // const exphbs = require('express-handlebars');
 // app.engine('handlebars', exphbs());
@@ -27,6 +28,7 @@ app.use('/api/students', studentsRouter);
 app.use('/api/subscriptions', subscriptionsRouter);
 app.use('/api/driveTimes', driveTimesRouter);
 app.use('/api/requests', requestsRouter);
+app.use('/api/lessons', lessonsRouter);
 
 app.listen(port, ()=> {
   console.log(`Listening on ${port}!`)
