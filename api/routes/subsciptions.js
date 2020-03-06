@@ -11,6 +11,12 @@ router.post('/', controller.postSubscription, controller.postSubscriptionLessons
 
 router.post('/send', controller.mailNewSubscription);
 
+router.put('/deactivate/:subscriptionId', 
+  controller.endSubscription,
+  controller.deleteLessons,
+  controller.mailDeactivatedSubscription
+  );
+
 router.put('/:subscriptionId', controller.putSubscription);
 // UPDATE LESSON
 // IF updateSubscription === TRUE, 
