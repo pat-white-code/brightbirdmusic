@@ -33,6 +33,9 @@ const mailNewSubscription = (req, res) => {
     let endTimeText = endTime.format('h:mm A');
     let age = Math.abs(moment(sub.dob).diff(moment(), 'years'));
 
+    // let subjectLine = startTime.format('MON MAR 5 @ 3:00 PM')
+    let subjectLine = startTime.format('dddd MMMM Do @ h:mm A');
+
 
     let output = `
   <p>You have a new subscription</p>
@@ -80,7 +83,7 @@ const mailNewSubscription = (req, res) => {
     let info = await transporter.sendMail({
       from: "Emmy Corkery <emmy25@ethereal.email>", // sender address
       to: "bar@example.com, baz@example.com, info@westlakelessons.com", // list of receivers
-      subject: "New Subscription Received", // Subject line
+      subject: `Lesson Confirmation - ${subjectLine} w/ ${teacherName}`, // Subject line
       text: "Subscription info", // plain text body
       html: output // html body
     });
