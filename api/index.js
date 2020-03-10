@@ -21,6 +21,7 @@ const lessonsRouter = require('./routes/lessons');
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}))
 
 app.use('/api/teachers', teachersRouter);
 app.use('/api/schedules', schedulesRouter);
